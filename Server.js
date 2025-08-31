@@ -221,12 +221,12 @@ app.get("/api/profile", async (req, res) => {
 // =========================
 // 📌 Serve HTML & Assets
 // =========================
-app.get('/', (req, res) => res.sendFile(__dirname + '/index.html'));
-app.get('/admin', (req, res) => res.sendFile(__dirname + '/Admin.html'));
-app.get('/signup', (req, res) => res.sendFile(__dirname + '/Signup.html'));
-app.get('/profile', (req, res) => res.sendFile(__dirname + '/Profile.html'));
-app.get('/style.css', (req, res) => res.sendFile(__dirname + '/style.css'));
-app.get('/profile.png', (req, res) => res.sendFile(__dirname + '/profile.png'));
+app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
+app.get('/admin', (req, res) => res.sendFile(__dirname + '/public/Admin.html'));
+app.get('/signup', (req, res) => res.sendFile(__dirname + '/public/Signup.html'));
+app.get('/profile', (req, res) => res.sendFile(__dirname + '/public/Profile.html'));
+app.get('/style.css', (req, res) => res.sendFile(__dirname + '/public/style.css'));
+app.get('/profile.png', (req, res) => res.sendFile(__dirname + '/public/profile.png'));
 
 // =========================
 // 📌 Start Server
