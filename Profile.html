@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <!-- Navbar -->
+  <div class="nav">
+    <h1>Exam Application</h1>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/admin">Admin</a>
+      <a href="/exam">Exam</a>
+      <a href="/signup" id="signupLink">Signup</a>
+      <a href="/" id="loginLink">Login</a>
+      <a href="/logout" id="logoutLink">Logout</a>
+      <a href="/profile" id="profileLink"><img src="profile.png" alt="Profile" /></a>
+    </div>
+  </div>
+
+  <h2>Student Profile</h2>
+
+  <!-- Profile Data -->
+  <div id="profile-container">
+    <p><strong>Name:</strong> <span id="name">Loading...</span></p>
+    <p><strong>Email:</strong> <span id="email">Loading...</span></p>
+    <p><strong>Exam Score:</strong> <span id="score">Loading...</span></p>
+    <p><strong>Total Attempted:</strong> <span id="TotalAttempted">Loading...</span></p>
+  </div>
+
+  <script>
+    // Check login status
+    fetch('/check-auth')
+      .then(res => res.json())
+      .then(data => {
+        if (data.loggedIn) {
+          // Hide login/signup, show logout/profile
+          document.getElementById('loginLink').style.display = 'none';
+          document.getElementById('signupLink').style.display = 'none';
+          loadProfile();
+        } else {
+          document.getElementById('logoutLink').style.display = 'none';
+          document.getElementById('profileLink').style.display = 'none';
+          alert("Please login first");
+          window.location.href = "/";
+        }
+      })
+      .catch(err => {
+        console.error("Auth check failed:", err);
+        alert("Error checking login status");
+      });
+
+    // Load profile info from /api/profile
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/profile');
+        const data = await res.json();
+
+        if (data.error) {
+          alert(data.error);
+          return;
+        }
+
+        document.getElementById("name").textContent = data.user.username;
+        document.getElementById("email").textContent = data.user.email;
+        document.getElementById("score").textContent = data.result.score ?? "Not Attempted Yet";
+        document.getElementById("TotalAttempted").textContent = data.result.totalAttempted ?? 0;
+      } catch (err) {
+        console.error("Failed to load profile:", err);
+        alert("Could not load profile data");
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Page</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <!-- Navbar -->
+  <div class="nav">
+    <h1>Exam Application</h1>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/admin">Admin</a>
+      <a href="/exam">Exam</a>
+      <a href="/signup" id="signupLink">Signup</a>
+      <a href="/" id="loginLink">Login</a>
+      <a href="/logout" id="logoutLink">Logout</a>
+      <a href="/profile" id="profileLink"><img src="profile.png" alt="Profile" /></a>
+    </div>
+  </div>
+
+  <h2 class="form-title">Welcome to the Exam Application</h2>
+  <p class="form-description">This application allows you to manage and take exams online.</p>
+  <div class="time" id="time">10:00</div>
+
+  <!-- Exam Form -->
+  <div class="exam-container">
+    <form class="exam-form" id="examForm">
+      <button type="submit" class="exam-submit-btn">Submit Exam</button>
+    </form>
+
+    <div id="result" style="margin-top:20px; font-size:18px; font-weight:bold; color:green;"></div>
+  </div>
+
+  <div class="footer">
+    <p>&copy; 2023 Exam Application. All rights reserved.</p>
+  </div>
+
+  <script>
+    let questions = [];
+    let submitted = false; // prevent double submit
+
+    // Load questions
+    fetch('/api/questions')
+      .then(res => res.json())
+      .then(data => {
+        questions = data;
+        const examForm = document.getElementById('examForm');
+
+        data.forEach((q, index) => {
+          const questionDiv = document.createElement('div');
+          questionDiv.classList.add('question');
+
+          const questionText = document.createElement('p');
+          questionText.textContent = `${index + 1}. ${q.question}`;
+          questionDiv.appendChild(questionText);
+
+          const optionsDiv = document.createElement('div');
+          optionsDiv.classList.add('options');
+
+          ['option1', 'option2', 'option3', 'option4'].forEach((opt, i) => {
+            const label = document.createElement('label');
+            label.style.display = 'block';
+            const value = String.fromCharCode(65 + i); // A, B, C, D
+            // one option per line ?
+            label.innerHTML = `<input type="radio" name="q${index}" value="${value}"> ${value}) ${q[opt]}`;
+            optionsDiv.appendChild(label);
+          });
+
+          questionDiv.appendChild(optionsDiv);
+          examForm.insertBefore(questionDiv, examForm.querySelector('.exam-submit-btn'));
+        });
+      });
+
+    // Submit exam
+    async function submitExam() {
+      if (submitted) return; // prevent double submit
+      submitted = true;
+
+      const answers = questions.map((q, index) => {
+        const selected = document.querySelector(`input[name="q${index}"]:checked`);
+        return {
+          questionId: q._id,
+          selectedOption: selected ? selected.value : null
+        };
+      });
+
+      try {
+        const res = await fetch("/submit-result", { // backend cumulative update
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ answers })
+        });
+
+        const data = await res.json();
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerText = `এই Exam-এর স্কোর: ${data.score} / ${questions.length} | Total Attempts: ${data.attempts}`;
+      } catch (err) {
+        console.error(err);
+        alert("Server error");
+      }
+    }
+
+    // Manual submit
+    document.getElementById("examForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      submitExam();
+    });
+
+    // Timer
+    let timeLeft = 600; // 10 min = 600 sec
+    const timeDisplay = document.getElementById('time');
+
+    const timer = setInterval(() => {
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        timeDisplay.textContent = 'Time Up!';
+        submitExam(); // auto-submit
+      } else {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        timeDisplay.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+        timeLeft--;
+      }
+    }, 1000);
+
+    // Auth check
+    fetch('/check-auth')
+      .then(res => res.json())
+      .then(data => {
+        if (data.loggedIn) {
+          document.getElementById('loginLink').style.display = 'none';
+          document.getElementById('signupLink').style.display = 'none';
+        } else {
+          document.getElementById('logoutLink').style.display = 'none';
+          document.getElementById('profileLink').style.display = 'none';
+          alert("Please login first");
+          window.location.href = "/";
+        }
+      });
+  </script>
+</body>
+
+</html>
