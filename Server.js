@@ -78,7 +78,7 @@ app.post('/submit-question', async (req, res) => {
   const { question, option1, option2, option3, option4, answer } = req.body;
   const newQuestion = new Question({ question, option1, option2, option3, option4, answer });
   await newQuestion.save();
-  res.sendFile(__dirname + '/Admin.html');
+  res.sendFile(__dirname + '/public/Admin.html');
 });
 
 // ➡️ Signup
@@ -87,7 +87,7 @@ app.post('/signup', async (req, res) => {
   const hashedPass = await bcrypt.hash(password, 10); 
   const newUser = new User({ username, email, password: hashedPass });
   await newUser.save();
-  res.sendFile(__dirname + '/index.html');
+  res.sendFile(__dirname + '/public/index.html');
 });
 
 // ➡️ Login
@@ -113,7 +113,7 @@ function requireLogin(req, res, next) {
 
 // ➡️ Exam page
 app.get('/exam', requireLogin, (req, res) => {
-  res.sendFile(__dirname + '/Exam.html');
+  res.sendFile(__dirname + '/public/Exam.html');
 });
 
 // ➡️ Logout
