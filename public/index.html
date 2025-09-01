@@ -44,22 +44,36 @@
 
 
 
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    const loginLink = document.getElementById('loginLink');
+    const signupLink = document.getElementById('signupLink');
+    const logoutLink = document.getElementById('logoutLink');
+    const profileLink = document.getElementById('profileLink');
 
-    <script>
-        fetch('/check-auth')
-            .then(res => res.json())
-            .then(data => {
-                if (data.loggedIn) {
-                    // logged in হলে
-                    document.getElementById('loginLink').style.display = 'none';
-                    document.getElementById('signupLink').style.display = 'none';
-                } else {
-                    // logged out হলে
-                    document.getElementById('logoutLink').style.display = 'none';
-                    document.getElementById('profileLink').style.display = 'none';
-                }
-            });
-    </script>
+    try {
+        const res = await fetch('/check-auth');
+        const data = await res.json();
+
+        if (data.loggedIn) {
+            // User logged in
+            loginLink.style.display = 'none';
+            signupLink.style.display = 'none';
+            logoutLink.style.display = 'inline-block';
+            profileLink.style.display = 'inline-block';
+        } else {
+            // User not logged in
+            loginLink.style.display = 'inline-block';
+            signupLink.style.display = 'inline-block';
+            logoutLink.style.display = 'none';
+            profileLink.style.display = 'none';
+        }
+    } catch (err) {
+        console.error('Auth check failed', err);
+    }
+});
+</script>
+
 </body>
 
 </html>

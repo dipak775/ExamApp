@@ -37,8 +37,8 @@ if (!mongoURI) {
 
 mongoose
   .connect(mongoURI)
-  .then(() => console.log('✅ MongoDB Connected'))
-  .catch((err) => console.error('❌ MongoDB Error:', err));
+  .then(() => console.log('MongoDB Connected'))
+  .catch((err) => console.error('MongoDB Error:', err));
 
 // =========================
 // 📌 Schemas & Models
@@ -57,6 +57,7 @@ const userSchema = new mongoose.Schema({
   username: String,
   email: String,
   password: String,
+  role: { type: String, default: 'user' }
 });
 const User = mongoose.model('User', userSchema);
 
@@ -91,7 +92,12 @@ app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     const user = await User.findOne({ username });
     if (user && (await bcrypt.compare(password, user.password))) {
-      req.session.user = { _id: user._id, username: user.username, email: user.email };
+      req.session.user = { 
+        _id: user._id, 
+        username: user.username, 
+        email: user.email,
+        role: user.role   // ✅ এখানে role add হলো
+      };
       res.redirect('/exam');
     } else {
       res.send(`<script>alert('Invalid credentials'); window.location.href='/'</script>`);
@@ -108,6 +114,14 @@ function requireLogin(req, res, next) {
   next();
 }
 
+// ➡️ Require Admin Middleware
+function requireAdmin(req, res, next) {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.redirect('/exam'); // সাধারণ ইউজার exam পেজে যাবে
+  }
+  next();
+}
+
 // ➡️ Exam Page
 app.get('/exam', requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'Exam.html'));
@@ -121,8 +135,16 @@ app.get('/logout', (req, res) => {
   });
 });
 
-// ➡️ Add Question (Admin)
-app.post('/submit-question', requireLogin, async (req, res) => {
+app.get('/check-auth', (req, res) => {
+  if (req.session.user) {
+    res.json({ loggedIn: true, user: req.session.user });
+  } else {
+    res.json({ loggedIn: false });
+  }
+});
+
+// ➡️ Add Question (Admin only)
+app.post('/submit-question', requireAdmin, async (req, res) => {
   try {
     const { question, option1, option2, option3, option4, answer } = req.body;
     const newQuestion = new Question({ question, option1, option2, option3, option4, answer });
@@ -205,7 +227,7 @@ app.get('/api/profile', requireLogin, async (req, res) => {
 // 📌 Serve HTML
 // =========================
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/admin', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'Admin.html')));
+app.get('/admin', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'Admin.html'))); // ✅ এখন শুধুই admin ঢুকতে পারবে
 app.get('/signup', (req, res) => res.sendFile(path.join(__dirname, 'public', 'Signup.html')));
 app.get('/profile', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'Profile.html')));
 
@@ -213,5 +235,5 @@ app.get('/profile', requireLogin, (req, res) => res.sendFile(path.join(__dirname
 // 📌 Start Server
 // =========================
 app.listen(port, () => {
-  console.log(`🚀 Server running at http://localhost:${port}`);
+  console.log(`Server running at http://localhost:${port}`);
 });

@@ -14,7 +14,7 @@
     <h1>Exam Application</h1>
     <div class="nav-links">
       <a href="/">Home</a>
-      <a href="/admin">Admin</a>
+      <a href="/admin" id="adminLink">Admin</a>
       <a href="/exam">Exam</a>
       <a href="/signup" id="signupLink">Signup</a>
       <a href="/" id="loginLink">Login</a>
@@ -39,13 +39,22 @@
       .then(res => res.json())
       .then(data => {
         if (data.loggedIn) {
-          // Hide login/signup, show logout/profile
+          // Hide login/signup
           document.getElementById('loginLink').style.display = 'none';
           document.getElementById('signupLink').style.display = 'none';
+
+          // Show/Hide admin link
+          if (data.user.role === "admin") {
+            document.getElementById("adminLink").style.display = "inline-block";
+          } else {
+            document.getElementById("adminLink").style.display = "none";
+          }
+
           loadProfile();
         } else {
           document.getElementById('logoutLink').style.display = 'none';
           document.getElementById('profileLink').style.display = 'none';
+          document.getElementById("adminLink").style.display = "none";
           alert("Please login first");
           window.location.href = "/";
         }
