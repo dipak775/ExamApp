@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+  <!-- Navbar -->
+  <div class="nav">
+    <h1>Exam Application</h1>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/exam">Exam</a>
+      <a href="/signup" id="signupLink">Signup</a>
+      <a href="/login" id="loginLink">Login</a>
+      <a href="/logout" id="logoutLink">Logout</a>
+      <a href="/profile" id="profileLink"><img src="/profile.png" alt="Profile" /></a>
+    </div>
+    <button class="hamburger">☰</button>
+  </div>
+
+  <!-- Main Content -->
+  <h2 class="form-title">Login to Exam Application</h2>
+  <p class="form-description">Please login with your email and password.</p>
+
+  <!-- Login Form -->
+  <div class="form-container">
+    <form id="login-form" method="POST" action="/login">
+      <h3>Login</h3>
+      <input type="email" placeholder="Email" name="email" required>
+      <input type="password" placeholder="Password" name="password" required>
+      <button type="submit">Login</button>
+      <p>Don't have an account? <a href="/signup">Sign Up</a></p>
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>&copy; 2025 DS Computer Institute. All rights reserved.</p>
+  </div>
+
+  <!-- Script for navbar toggle & auth check -->
+  <script>
+    const hamburger = document.querySelector(".hamburger");
+    const navLinks = document.querySelector(".nav-links");
+
+    hamburger.addEventListener("click", () => {
+      navLinks.classList.toggle("active");
+    });
+
+    fetch('/check-auth')
+      .then(res => res.json())
+      .then(data => {
+        if (data.loggedIn) {
+          document.getElementById('loginLink').style.display = 'none';
+          document.getElementById('signupLink').style.display = 'none';
+          document.getElementById('logoutLink').style.display = 'inline-block';
+          document.getElementById('profileLink').style.display = 'inline-block';
+        } else {
+          document.getElementById('logoutLink').style.display = 'none';
+          document.getElementById('profileLink').style.display = 'none';
+        }
+      });
+  </script>
+</body>
+
+</html>

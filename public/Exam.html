@@ -1,148 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exam Page</title>
-  <link rel="stylesheet" href="/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Page</title>
+<link rel="stylesheet" href="/style.css">
 </head>
-
 <body>
   <!-- Navbar -->
   <div class="nav">
     <h1>Exam Application</h1>
     <div class="nav-links">
       <a href="/">Home</a>
-      <a href="/admin">Admin</a>
+      <a href="/admin" id="adminLink" style="display:none;">Admin</a>
       <a href="/exam">Exam</a>
-      <a href="/signup" id="signupLink">Signup</a>
-      <a href="/" id="loginLink">Login</a>
       <a href="/logout" id="logoutLink">Logout</a>
-      <a href="/profile" id="profileLink"><img src="profile.png" alt="Profile" /></a>
+      <a href="/profile" id="profileLink"><img src="/profile.png" alt="Profile" /></a>
+    </div>
+    <button class="hamburger">&#9776;</button>
+  </div>
+
+  <div class="exam-container">
+    <h2 class="form-title">Online Exam</h2>
+    <button id="startExamBtn">Start Exam</button>
+    <div id="timer" class="timer-box" style="display:none;">Time Left: 10:00</div>
+
+    <div id="exam-container"></div>
+
+    <div class="nav-buttons" style="display:none;">
+      <button id="prevBtn">Previous</button>
+      <button id="submitExam">Submit Exam</button>
+      <button id="nextBtn">Next</button>
+    </div>
+
+    <div id="resultBox" style="margin-top:20px; display:none;">
+      <h3>Result</h3>
+      <p id="resultText"></p>
     </div>
   </div>
 
-  <h2 class="form-title">Welcome to the Exam Application</h2>
-  <p class="form-description">This application allows you to manage and take exams online.</p>
-  <div class="time" id="time">10:00</div>
-
-  <!-- Exam Form -->
-  <div class="exam-container">
-    <form class="exam-form" id="examForm">
-      <button type="submit" class="exam-submit-btn">Submit Exam</button>
-    </form>
-
-    <div id="result" style="margin-top:20px; font-size:18px; font-weight:bold; color:green;"></div>
-  </div>
-
   <div class="footer">
-    <p>&copy; 2023 Exam Application. All rights reserved.</p>
+    <p>&copy; 2025 DS Computer Institute. All rights reserved.</p>
   </div>
 
-  <script>
-    let questions = [];
-    let submitted = false; // prevent double submit
+<script>
+const hamburger = document.querySelector(".hamburger");
+const navLinks = document.querySelector(".nav-links");
+hamburger.addEventListener("click", () => navLinks.classList.toggle("active"));
 
-    // Load questions
-    fetch('/api/questions')
-      .then(res => res.json())
-      .then(data => {
-        questions = data;
-        const examForm = document.getElementById('examForm');
+let questions = [];
+let userAnswers = {};
+let currentPage = 0;
+const perPage = 10;
+let timerInterval;
+let examStarted = false;
+let examSubmitted = false;
+let timeLeft = 600;
 
-        data.forEach((q, index) => {
-          const questionDiv = document.createElement('div');
-          questionDiv.classList.add('question');
+const examContainer = document.getElementById("exam-container");
+const navButtons = document.querySelector(".nav-buttons");
+const timerDisplay = document.getElementById("timer");
 
-          const questionText = document.createElement('p');
-          questionText.textContent = `${index + 1}. ${q.question}`;
-          questionDiv.appendChild(questionText);
+// Load initial 10 questions for demo
+async function loadInitialQuestions() {
+  try {
+    const authRes = await fetch('/check-auth');
+    const authData = await authRes.json();
+    const user = authData.user;
+    const res = await fetch(`/api/questions/${user.classLevel}`);
+    questions = await res.json();
 
-          const optionsDiv = document.createElement('div');
-          optionsDiv.classList.add('options');
+    // show first 10 questions for initial demo
+    renderQuestions(questions.slice(0, perPage));
+  } catch(err) { console.error(err); }
+}
+loadInitialQuestions();
 
-          ['option1', 'option2', 'option3', 'option4'].forEach((opt, i) => {
-            const label = document.createElement('label');
-            label.style.display = 'block';
-            const value = String.fromCharCode(65 + i); // A, B, C, D
-            // one option per line ?
-            label.innerHTML = `<input type="radio" name="q${index}" value="${value}"> ${value}) ${q[opt]}`;
-            optionsDiv.appendChild(label);
-          });
+function renderQuestions(questionList) {
+  examContainer.innerHTML = questionList.map((q, i) => `
+    <div class="question-block">
+      <p><b>Q${i + 1}:</b> ${q.questionText}</p>
+      <label><input type="radio" name="q${q._id}" value="option1"> ${q.option1}</label><br>
+      <label><input type="radio" name="q${q._id}" value="option2"> ${q.option2}</label><br>
+      <label><input type="radio" name="q${q._id}" value="option3"> ${q.option3}</label><br>
+      <label><input type="radio" name="q${q._id}" value="option4"> ${q.option4}</label>
+    </div>
+  `).join("");
 
-          questionDiv.appendChild(optionsDiv);
-          examForm.insertBefore(questionDiv, examForm.querySelector('.exam-submit-btn'));
-        });
-      });
-
-    // Submit exam
-    async function submitExam() {
-      if (submitted) return; // prevent double submit
-      submitted = true;
-
-      const answers = questions.map((q, index) => {
-        const selected = document.querySelector(`input[name="q${index}"]:checked`);
-        return {
-          questionId: q._id,
-          selectedOption: selected ? selected.value : null
-        };
-      });
-
-      try {
-        const res = await fetch("/submit-result", { // backend cumulative update
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ answers })
-        });
-
-        const data = await res.json();
-        const resultDiv = document.getElementById("result");
-        resultDiv.innerText = `এই Exam-এর স্কোর: ${data.score} / ${questions.length} | Total Attempts: ${data.attempts}`;
-      } catch (err) {
-        console.error(err);
-        alert("Server error");
-      }
+  questionList.forEach(q => {
+    if(userAnswers[q._id]) {
+      const input = document.querySelector(`input[name="q${q._id}"][value="${userAnswers[q._id]}"]`);
+      if(input) input.checked = true;
     }
+  });
 
-    // Manual submit
-    document.getElementById("examForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      submitExam();
+  document.querySelectorAll('input[type="radio"]').forEach(input => {
+    input.addEventListener('change', function() {
+      userAnswers[this.name.replace('q','')] = this.value;
     });
+  });
+}
 
-    // Timer
-    let timeLeft = 600; // 10 min = 600 sec
-    const timeDisplay = document.getElementById('time');
+function showPage(page) {
+  if (questions.length === 0) { examContainer.innerHTML = "<p>No questions available.</p>"; return; }
+  const start = page * perPage;
+  const end = start + perPage;
+  renderQuestions(questions.slice(start, end));
+}
 
-    const timer = setInterval(() => {
-      if (timeLeft <= 0) {
-        clearInterval(timer);
-        timeDisplay.textContent = 'Time Up!';
-        submitExam(); // auto-submit
-      } else {
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        timeDisplay.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-        timeLeft--;
-      }
-    }, 1000);
+document.getElementById("prevBtn").addEventListener("click", () => {
+  if (!examStarted) { alert("⚠️ Start the exam before"); return; }
+  if (currentPage > 0) { currentPage--; showPage(currentPage); }
+});
 
-    // Auth check
-    fetch('/check-auth')
-      .then(res => res.json())
-      .then(data => {
-        if (data.loggedIn) {
-          document.getElementById('loginLink').style.display = 'none';
-          document.getElementById('signupLink').style.display = 'none';
-        } else {
-          document.getElementById('logoutLink').style.display = 'none';
-          document.getElementById('profileLink').style.display = 'none';
-          alert("Please login first");
-          window.location.href = "/";
+document.getElementById("nextBtn").addEventListener("click", () => {
+  if (!examStarted) { alert("⚠️ Start the exam before"); return; }
+  if ((currentPage + 1) * perPage < questions.length) { currentPage++; showPage(currentPage); }
+});
+
+document.getElementById("startExamBtn").addEventListener("click", async () => {
+  try {
+    const startRes = await fetch('/start-exam', { method: 'POST' });
+    const startData = await startRes.json();
+    if (!startData.success) { alert(startData.message); return; }
+
+    examStarted = true;
+    examSubmitted = false;
+    document.getElementById("startExamBtn").style.display = "none";
+    timerDisplay.style.display = "block";
+    navButtons.style.display = "flex";
+    currentPage = 0;
+    showPage(currentPage);
+
+    timeLeft = Math.floor((startData.expiryTime - Date.now()) / 1000);
+    if(timeLeft <= 0) timeLeft = 0;
+    startTimer();
+  } catch (err) { console.error(err); }
+});
+
+function startTimer() {
+  clearInterval(timerInterval);
+  function updateTimer() {
+    if(examSubmitted) return;
+    if(timeLeft <= 0) {
+      clearInterval(timerInterval);
+      let countdown = 5;
+      timerDisplay.textContent = `⏰ Time is over! Submitting in ${countdown}s`;
+      const countdownInterval = setInterval(() => {
+        countdown--;
+        if(countdown >= 0) timerDisplay.textContent = `⏰ Time is over! Submitting in ${countdown}s`;
+        if(countdown <= 0) {
+          clearInterval(countdownInterval);
+          submitExam();
         }
-      });
-  </script>
-</body>
+      }, 1000);
+      return;
+    }
+    let minutes = Math.floor(timeLeft / 60);
+    let seconds = timeLeft % 60;
+    timerDisplay.textContent = `Time Left: ${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+    timeLeft--;
+  }
+  updateTimer();
+  timerInterval = setInterval(updateTimer, 1000);
+}
 
+async function submitExam() {
+  if(!examStarted || examSubmitted) return;
+  examSubmitted = true;
+  clearInterval(timerInterval);
+
+  const answers = questions.map(q => ({
+    questionId: q._id,
+    selectedOption: userAnswers[q._id] || null
+  }));
+
+  try {
+    const res = await fetch('/submit-result', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ answers })
+    });
+    const data = await res.json();
+    if(data.success) {
+      // redirect to profile page
+      window.location.href = "/profile";
+    } else {
+      alert(data.message || "❌ Exam submit failed");
+    }
+  } catch(err) { console.error(err); }
+}
+
+document.getElementById("submitExam").addEventListener("click", submitExam);
+
+// Prevent leaving page without submit
+window.addEventListener("beforeunload", function(e) {
+  if(examStarted && !examSubmitted) {
+    e.preventDefault();
+    e.returnValue = "⚠️ You have not submitted your exam yet. Are you sure you want to leave?";
+  }
+});
+
+document.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', function(e) {
+    if(examStarted && !examSubmitted) {
+      e.preventDefault();
+      alert("⚠️ Please submit your exam before leaving the page!");
+    }
+  });
+});
+
+// Show admin link
+fetch('/check-auth').then(res => res.json()).then(data => {
+  if(data.loggedIn && data.user.role === "admin") {
+    document.getElementById("adminLink").style.display = "inline-block";
+  }
+});
+</script>
+</body>
 </html>

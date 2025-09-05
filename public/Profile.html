@@ -14,76 +14,125 @@
     <h1>Exam Application</h1>
     <div class="nav-links">
       <a href="/">Home</a>
-      <a href="/admin" id="adminLink">Admin</a>
+      <a href="/admin" id="adminLink" style="display:none;">Admin</a>
       <a href="/exam">Exam</a>
       <a href="/signup" id="signupLink">Signup</a>
-      <a href="/" id="loginLink">Login</a>
-      <a href="/logout" id="logoutLink">Logout</a>
-      <a href="/profile" id="profileLink"><img src="/profile.png" alt="Profile" /></a>
+      <a href="/login" id="loginLink">Login</a>
+      <a href="/logout" id="logoutLink" style="display:none;">Logout</a>
+      <a href="/profile" id="profileLink">
+        <img src="/profile.png" alt="Profile" style="width:32px;height:32px;border-radius:50%;" />
+      </a>
+    </div>
+    <button class="hamburger">☰</button>
+  </div>
+
+  <!-- Profile Section -->
+  <div id="profile-container">
+    <h2>Student Profile</h2>
+    <p><strong>Name:</strong> <span class="value" id="name">Loading...</span></p>
+    <p><strong>Email:</strong> <span class="value" id="email">Loading...</span></p>
+    <p><strong>Class:</strong> <span class="value" id="classLevel">Loading...</span></p>
+
+    <h3>Exam History</h3>
+    <div id="exam-history">
+      <p>Loading exam data...</p>
     </div>
   </div>
 
-  <h2>Student Profile</h2>
-
-  <!-- Profile Data -->
-  <div id="profile-container">
-    <p><strong>Name:</strong> <span id="name">Loading...</span></p>
-    <p><strong>Email:</strong> <span id="email">Loading...</span></p>
-    <p><strong>Exam Score:</strong> <span id="score">Loading...</span></p>
-    <p><strong>Total Attempted:</strong> <span id="TotalAttempted">Loading...</span></p>
+  <!-- Footer -->
+  <div class="footer">
+    <p>&copy; 2025 DS Computer Institute. All rights reserved.</p>
   </div>
 
+  <!-- Script -->
   <script>
-    // Check login status
+    // Hamburger toggle
+    const hamburger = document.querySelector(".hamburger");
+    const navLinks = document.querySelector(".nav-links");
+    hamburger.addEventListener("click", () => {
+      navLinks.classList.toggle("active");
+    });
+
+    // Auth check + navbar display
     fetch('/check-auth')
       .then(res => res.json())
       .then(data => {
         if (data.loggedIn) {
-          // Hide login/signup
           document.getElementById('loginLink').style.display = 'none';
           document.getElementById('signupLink').style.display = 'none';
+          document.getElementById('logoutLink').style.display = 'inline-block';
+          document.getElementById('profileLink').style.display = 'inline-block';
 
-          // Show/Hide admin link
-          if (data.user.role === "admin") {
-            document.getElementById("adminLink").style.display = "inline-block";
-          } else {
-            document.getElementById("adminLink").style.display = "none";
-          }
+          if (data.user.role === "admin") document.getElementById("adminLink").style.display = "inline-block";
 
           loadProfile();
         } else {
           document.getElementById('logoutLink').style.display = 'none';
           document.getElementById('profileLink').style.display = 'none';
           document.getElementById("adminLink").style.display = "none";
+          document.getElementById('loginLink').style.display = 'inline-block';
+          document.getElementById('signupLink').style.display = 'inline-block';
+
           alert("Please login first");
-          window.location.href = "/";
+          window.location.href = "/login";
         }
       })
-      .catch(err => {
-        console.error("Auth check failed:", err);
-        alert("Error checking login status");
-      });
+      .catch(err => console.error("Auth check failed:", err));
 
-    // Load profile info from /api/profile
+    // Load Profile Info + Exam Results
     async function loadProfile() {
       try {
         const res = await fetch('/api/profile');
         const data = await res.json();
 
-        if (data.error) {
-          alert(data.error);
+        if (!data.user) {
+          alert("Session expired, please login again");
+          window.location.href = "/login";
           return;
         }
 
-        document.getElementById("name").textContent = data.user.username;
-        document.getElementById("email").textContent = data.user.email;
-        document.getElementById("score").textContent = data.result.score ?? "Not Attempted Yet";
-        document.getElementById("TotalAttempted").textContent = data.result.totalAttempted ?? 0;
+        document.getElementById("name").textContent = data.user.username || "Unknown";
+        document.getElementById("email").textContent = data.user.email || "Unknown";
+        document.getElementById("classLevel").textContent = data.user.classLevel ?? "Not Set";
+
+        const examHistoryDiv = document.getElementById("exam-history");
+        examHistoryDiv.innerHTML = "";
+
+        if (!data.results || data.results.length === 0) {
+          examHistoryDiv.innerHTML = "<p>No exam attempted yet</p>";
+        } else {
+          let table = `
+            <table border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;text-align:center;">
+              <thead>
+                <tr>
+                  <th>Attempt</th>
+                  <th>Score</th>
+                  <th>Total Questions</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+          data.results.forEach((r, index) => {
+            const date = new Date(r.submittedAt).toLocaleString();
+            table += `
+              <tr>
+                <td>${index + 1}</td>
+                <td>${r.score}</td>
+                <td>${r.total}</td>
+                <td>${date}</td>
+              </tr>
+            `;
+          });
+          table += "</tbody></table>";
+          examHistoryDiv.innerHTML = table;
+        }
       } catch (err) {
-        console.error("Failed to load profile:", err);
+        console.error("Profile load failed:", err);
         alert("Could not load profile data");
       }
     }
   </script>
 </body>
+
 </html>

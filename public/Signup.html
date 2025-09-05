@@ -2,61 +2,78 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup Page</title>
-<link rel="stylesheet" href="/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signup Page</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
-    <div class="nav">
-        <h1> Exam Application</h1>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/admin">Admin</a>
-            <a href="/exam">Exam</a>
-            <a href="/signup" id="signupLink">Signup</a>
-            <a href="/" id="loginLink">Login</a>
-            <a href="/logout" id="logoutLink">Logout</a>
-            <a href="/profile" id="profileLink"><img src="/profile.png" /></a>
-            
-        </div>
+  <!-- Navbar -->
+  <div class="nav">
+    <h1>Exam Application</h1>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/admin" id="adminLink" style="display:none;">Admin</a>
+      <a href="/exam">Exam</a>
+      <a href="/signup" id="signupLink">Signup</a>
+      <a href="/login" id="loginLink">Login</a>
+      <a href="/logout" id="logoutLink">Logout</a>
+      <a href="/profile" id="profileLink"><img src="/profile.png" alt="Profile" style="width:32px;height:32px;border-radius:50%;" /></a>
     </div>
+    <button class="hamburger">☰</button>
+  </div>
 
+  <!-- Main Content -->
+  <h2 class="form-title">Welcome to the Exam Application</h2>
+  <p class="form-description">This application allows you to manage and take exams online.</p>
 
-    <h2 class="form-title">Welcome to the Exam Application</h2>
-    <p class="form-description">This application allows you to manage and take exams online.</p>
-    <!-- signup form  -->
-    <div class="form-container">
-        <form id="signup-form" method="POST" action="/signup">
-            <h3>Sign Up</h3>
-            <input type="text" placeholder="Username" name="username" required>
-            <input type="email" placeholder="Email" name="email" required>
-            <input type="password" placeholder="Password" name="password" required>
-            <button type="submit">Sign Up</button>
-            <p>Already have an account? <a href="/" id="show-login">Login</a></p>
-        </form>
-    </div>
-    <!-- footer -->
-    <div class="footer">
-        <p>&copy; 2023 Exam Application. All rights reserved.</p>
-    </div>
+  <!-- Signup Form -->
+  <div class="form-container">
+    <form id="signup-form" method="POST" action="/signup">
+      <h3>Sign Up</h3>
+      <input type="text" class="username" placeholder="Username" name="username" required>
+      <input type="email" placeholder="Email" name="email" required>
+      <input type="password" placeholder="Password" name="password" required>
+      <button type="submit">Sign Up</button>
+      <p>Already have an account? <a href="/login" id="show-login">Login</a></p>
+    </form>
+  </div>
 
+  <!-- Footer -->
+  <div class="footer">
+    <p>&copy; 2025 DS Computer Institute. All rights reserved.</p>
+  </div>
 
-    <script>fetch('/check-auth')
-            .then(res => res.json())
-            .then(data => {
-                if (data.loggedIn) {
-                    // logged in হলে
-                    document.getElementById('loginLink').style.display = 'none';
-                    document.getElementById('signupLink').style.display = 'none';
-                } else {
-                    // logged out হলে
-                    document.getElementById('logoutLink').style.display = 'none';
-                    document.getElementById('profileLink').style.display = 'none';
-                }
-            });
-    </script>
+  <!-- Script -->
+  <script>
+    // Hamburger toggle
+    const hamburger = document.querySelector(".hamburger");
+    const navLinks = document.querySelector(".nav-links");
+    hamburger.addEventListener("click", () => {
+      navLinks.classList.toggle("active");
+    });
+
+    // Auth check
+    fetch('/check-auth')
+      .then(res => res.json())
+      .then(data => {
+        if (data.loggedIn) {
+          document.getElementById('loginLink').style.display = 'none';
+          document.getElementById('signupLink').style.display = 'none';
+          document.getElementById('logoutLink').style.display = 'inline-block';
+          document.getElementById('profileLink').style.display = 'inline-block';
+
+          if (data.user.role === "admin") {
+            document.getElementById("adminLink").style.display = "inline-block";
+          }
+        } else {
+          document.getElementById('logoutLink').style.display = 'none';
+          document.getElementById('profileLink').style.display = 'none';
+          document.getElementById("adminLink").style.display = "none";
+        }
+      });
+  </script>
 </body>
 
 </html>

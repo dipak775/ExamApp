@@ -1,239 +1,246 @@
-// =========================
-// 📌 Import Dependencies
-// =========================
-const dotenv = require('dotenv').config(); // Load .env
 const express = require('express');
 const session = require('express-session');
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
 
-// =========================
-// 📌 Middleware
-// =========================
+// ================= Middleware =================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'exam-secret-key',
+    secret: process.env.SESSION_SECRET || 'secret',
     resave: false,
-    saveUninitialized: true,
-    cookie: { maxAge: 1000 * 60 * 60 }, // 1 hour
+    saveUninitialized: false,
   })
 );
-app.use(express.static(path.join(__dirname, 'public')));
 
-// =========================
-// 📌 MongoDB Connection
-// =========================
-const mongoURI = process.env.MONGODB_URI;
-if (!mongoURI) {
-  console.error('❌ MONGODB_URI is missing in .env');
-  process.exit(1);
-}
-
+// ================= MongoDB ====================
 mongoose
-  .connect(mongoURI)
-  .then(() => console.log('MongoDB Connected'))
-  .catch((err) => console.error('MongoDB Error:', err));
+  .connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('✅ MongoDB Connected'))
+  .catch((err) => console.error('❌ MongoDB Error:', err));
 
-// =========================
-// 📌 Schemas & Models
-// =========================
+// ================= Schemas ====================
+const userSchema = new mongoose.Schema({
+  username: String,
+  email: String,
+  password: String,
+  role: { type: String, default: 'user' },
+  classLevel: { type: Number, default: 0 },
+});
+
 const questionSchema = new mongoose.Schema({
-  question: String,
+  classLevel: Number,
+  questionText: String,
   option1: String,
   option2: String,
   option3: String,
   option4: String,
   answer: String,
 });
-const Question = mongoose.model('Question', questionSchema);
-
-const userSchema = new mongoose.Schema({
-  username: String,
-  email: String,
-  password: String,
-  role: { type: String, default: 'user' }
-});
-const User = mongoose.model('User', userSchema);
 
 const resultSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  totalScore: { type: Number, default: 0 },
-  TotalExamTaken: { type: Number, default: 0 },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  score: { type: Number, default: 0 },
+  attempts: { type: Number, default: 0 },
+  total: { type: Number, default: 0 },
+  submittedAt: { type: Date, default: Date.now },
 });
+
+const User = mongoose.model('User', userSchema);
+const Question = mongoose.model('Question', questionSchema);
 const Result = mongoose.model('Result', resultSchema);
 
-// =========================
-// 📌 Routes
-// =========================
+// ================= Middleware =================
+function requireLogin(req, res, next) {
+  if (!req.session.user) return res.redirect('/login');
+  next();
+}
 
-// ➡️ Signup
+function requireAdmin(req, res, next) {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.redirect('/exam');
+  }
+  next();
+}
+
+// ================= Page Routes =================
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
+app.get('/signup', (req, res) => res.sendFile(path.join(__dirname, 'public', 'signup.html')));
+app.get('/exam', requireLogin, async (req, res) => {
+  const user = await User.findById(req.session.user._id);
+  if (!user || user.classLevel === 0) return res.redirect('/waiting');
+  res.sendFile(path.join(__dirname, 'public', 'exam.html'));
+});
+app.get('/profile', requireLogin, (req, res) =>
+  res.sendFile(path.join(__dirname, 'public', 'profile.html'))
+);
+app.get('/admin', requireAdmin, (req, res) =>
+  res.sendFile(path.join(__dirname, 'public', 'Admin.html'))
+);
+app.get('/waiting', requireLogin, (req, res) =>
+  res.sendFile(path.join(__dirname, 'public', 'waiting.html'))
+);
+
+// ================= Auth Routes =================
 app.post('/signup', async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    const hashedPass = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, email, password: hashedPass });
+    if (!username || !email || !password) return res.send('⚠️ All fields required');
+
+    const existing = await User.findOne({ email });
+    if (existing) return res.send('⚠️ User already exists');
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
-    res.redirect('/'); // redirect to login page
+    res.redirect('/login');
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Signup failed');
+    res.status(500).send('❌ Signup failed');
   }
 });
 
-// ➡️ Login
 app.post('/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
-    if (user && (await bcrypt.compare(password, user.password))) {
-      req.session.user = { 
-        _id: user._id, 
-        username: user.username, 
-        email: user.email,
-        role: user.role   // ✅ এখানে role add হলো
-      };
-      res.redirect('/exam');
-    } else {
-      res.send(`<script>alert('Invalid credentials'); window.location.href='/'</script>`);
-    }
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.send('⚠️ User not found');
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return res.send('⚠️ Invalid credentials');
+
+    req.session.user = user;
+    res.redirect(user.role === 'admin' ? '/admin' : '/profile');
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Login failed');
+    res.status(500).send('❌ Login failed');
   }
 });
 
-// ➡️ Require Login Middleware
-function requireLogin(req, res, next) {
-  if (!req.session.user) return res.redirect('/');
-  next();
-}
-
-// ➡️ Require Admin Middleware
-function requireAdmin(req, res, next) {
-  if (!req.session.user || req.session.user.role !== 'admin') {
-    return res.redirect('/exam'); // সাধারণ ইউজার exam পেজে যাবে
-  }
-  next();
-}
-
-// ➡️ Exam Page
-app.get('/exam', requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'Exam.html'));
-});
-
-// ➡️ Logout
 app.get('/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) console.log(err);
-    res.redirect('/');
-  });
+  req.session.destroy(() => res.redirect('/'));
 });
 
+// ================= API Routes =================
 app.get('/check-auth', (req, res) => {
-  if (req.session.user) {
-    res.json({ loggedIn: true, user: req.session.user });
-  } else {
-    res.json({ loggedIn: false });
+  if (req.session.user) res.json({ loggedIn: true, user: req.session.user });
+  else res.json({ loggedIn: false });
+});
+
+app.get('/api/profile', async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ message: "Not logged in" });
+  try {
+    const user = await User.findById(req.session.user._id).lean();
+    const results = await Result.find({ userId: user._id }).sort({ submittedAt: -1 }).lean();
+    res.json({ user, results });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to load profile" });
   }
 });
 
-// ➡️ Add Question (Admin only)
+app.get('/api/users', requireAdmin, async (req, res) => {
+  try { const users = await User.find(); res.json(users); }
+  catch { res.status(500).json({ message: '❌ Failed to load users' }); }
+});
+
+app.post('/api/update-user', requireAdmin, async (req, res) => {
+  const { userId, classLevel, role } = req.body;
+  try { await User.findByIdAndUpdate(userId, { classLevel, role }); res.json({ success: true }); }
+  catch { res.status(500).json({ message: '❌ Failed to update user' }); }
+});
+
 app.post('/submit-question', requireAdmin, async (req, res) => {
   try {
-    const { question, option1, option2, option3, option4, answer } = req.body;
-    const newQuestion = new Question({ question, option1, option2, option3, option4, answer });
+    const { classLevel, questionText, option1, option2, option3, option4, answer } = req.body;
+    const newQuestion = new Question({ classLevel, questionText, option1, option2, option3, option4, answer });
     await newQuestion.save();
     res.redirect('/admin');
+  } catch { res.status(500).send('❌ Failed to add question'); }
+});
+
+app.get('/api/questions/:classLevel', async (req, res) => {
+  try { const questions = await Question.find({ classLevel: req.params.classLevel }); res.json(questions); }
+  catch { res.status(500).json({ message: '❌ Failed to load questions' }); }
+});
+
+app.get('/api/questions', requireAdmin, async (req, res) => {
+  try { const questions = await Question.find(); res.json(questions); }
+  catch { res.status(500).json({ message: '❌ Failed to load questions' }); }
+});
+
+// ================= Exam Timer System =================
+
+// ✅ Start Exam: Dynamic timer per question + extra 10 min
+app.post('/start-exam', requireLogin, async (req, res) => {
+  try {
+    const user = await User.findById(req.session.user._id);
+    if (!user) return res.status(400).json({ success: false, message: "User not found" });
+
+    const questions = await Question.find({ classLevel: user.classLevel });
+    const questionCount = questions.length;
+
+    const timePerQuestion = 0.5 * 60 * 1000; // 0.3 minute per question
+    const extraTime = 10 * 60 * 1000; // 10 minutes extra
+    const totalTime = questionCount * timePerQuestion + extraTime;
+
+    req.session.examStartTime = Date.now();
+    req.session.examSubmitted = false;
+
+    res.json({
+      success: true,
+      startTime: req.session.examStartTime,
+      expiryTime: req.session.examStartTime + totalTime
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Failed to add question');
+    console.error("Start exam error:", err);
+    res.status(500).json({ success: false, message: "Failed to start exam" });
   }
 });
 
-// ➡️ Get All Questions
-app.get('/api/questions', async (req, res) => {
-  const questions = await Question.find({});
-  res.json(questions);
-});
-
-// ➡️ Submit Exam Result
+// ✅ Submit Exam
 app.post('/submit-result', requireLogin, async (req, res) => {
   try {
-    const userId = req.session.user._id;
-    const { answers } = req.body;
-    let currentScore = 0;
+    if (!req.session.examStartTime)
+      return res.status(400).json({ success: false, message: "Exam not started" });
 
-    for (let ans of answers) {
-      const question = await Question.findById(ans.questionId);
-      if (question && ans.selectedOption === question.answer) currentScore++;
+    if (req.session.examSubmitted)
+      return res.status(400).json({ success: false, message: "Already submitted" });
+
+    const { answers } = req.body;
+    let score = 0, attempts = 0;
+
+    for (const ans of answers) {
+      if (!ans.selectedOption) continue;
+      attempts++;
+      const q = await Question.findById(ans.questionId);
+      if (q && q.answer === ans.selectedOption) score++;
     }
 
-    const updatedResult = await Result.findOneAndUpdate(
-      { userId },
-      { $inc: { totalScore: currentScore, TotalExamTaken: 1 } },
-      { upsert: true, new: true }
-    );
-
-    res.json({
-      message: 'Result saved',
-      score: currentScore,
-      cumulativeScore: updatedResult.totalScore,
-      attempts: updatedResult.TotalExamTaken,
+    const newResult = new Result({
+      userId: req.session.user._id,
+      score,
+      attempts,
+      total: answers.length
     });
+    await newResult.save();
+
+    req.session.examStartTime = null;
+    req.session.examSubmitted = true;
+
+    res.json({ success: true, score, attempts, total: answers.length });
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Failed to submit result');
+    console.error("Submit result error:", err);
+    res.status(500).json({ success: false, message: "Failed to submit exam" });
   }
 });
 
-// ➡️ Profile API
-app.get('/api/profile', requireLogin, async (req, res) => {
-  try {
-    const userId = new mongoose.Types.ObjectId(req.session.user._id);
-    const data = await User.aggregate([
-      { $match: { _id: userId } },
-      {
-        $lookup: {
-          from: 'results',
-          localField: '_id',
-          foreignField: 'userId',
-          as: 'resultData',
-        },
-      },
-      { $unwind: { path: '$resultData', preserveNullAndEmptyArrays: true } },
-    ]);
-
-    if (!data.length) return res.status(404).json({ error: 'User not found' });
-
-    res.json({
-      user: { _id: data[0]._id, username: data[0].username, email: data[0].email },
-      result: data[0].resultData
-        ? { score: data[0].resultData.totalScore, totalAttempted: data[0].resultData.TotalExamTaken }
-        : { score: 0, totalAttempted: 0 },
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Failed to fetch profile');
-  }
-});
-
-// =========================
-// 📌 Serve HTML
-// =========================
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/admin', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'Admin.html'))); // ✅ এখন শুধুই admin ঢুকতে পারবে
-app.get('/signup', (req, res) => res.sendFile(path.join(__dirname, 'public', 'Signup.html')));
-app.get('/profile', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'Profile.html')));
-
-// =========================
-// 📌 Start Server
-// =========================
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+// ================= Start Server =================
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

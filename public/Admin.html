@@ -1,128 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Page</title>
-    <link rel="stylesheet" href="/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
-
 <body>
-    <div class="nav">
-        <h1> Exam Application</h1>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/admin">Admin</a>
-            <a href="/exam">Exam</a>
-            <a href="/signup" id="signupLink">Signup</a>
-            <a href="/" id="loginLink">Login</a>
-            <a href="/logout" id="logoutLink">Logout</a>
-            <a href="/profile" id="profileLink"><img src="profile.png" /></a>
+  <!-- Navbar -->
+  <div class="nav">
+    <h1>Exam Application</h1>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/admin">Dashboard</a>
+      <a href="/exam">Exam</a>
+      <a href="/logout">Logout</a>
+      <a href="/profile"><img src="/profile.png" alt="Profile" /></a></li>
+    </div>
+    <button class="hamburger">&#9776;</button>
+  </div>
+
+  <!-- Admin Container -->
+  <div class="admin-container">
+    <h2>Admin Dashboard</h2>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="tab-btn active" onclick="showTab(event,'add-question')">Add Question</button>
+      <button class="tab-btn" onclick="showTab(event,'update-user')">Manage Users</button>
+      <button class="tab-btn" onclick="showTab(event,'show-questions')">Show All Questions</button>
+    </div>
+
+    <!-- Add Question Section -->
+    <div id="add-question" class="tab-section active">
+      <h3>Add Question</h3>
+      <form id="questionForm" method="POST" action="/submit-question">
+        <div class="input-group">
+          <label>Class Level</label>
+          <input type="number" name="classLevel" required>
         </div>
+        <div class="input-group">
+          <label>Question</label>
+          <input type="text" name="questionText" required>
+        </div>
+        <div class="input-group">
+          <label>Option 1</label>
+          <input type="text" name="option1" required>
+        </div>
+        <div class="input-group">
+          <label>Option 2</label>
+          <input type="text" name="option2" required>
+        </div>
+        <div class="input-group">
+          <label>Option 3</label>
+          <input type="text" name="option3" required>
+        </div>
+        <div class="input-group">
+          <label>Option 4</label>
+          <input type="text" name="option4" required>
+        </div>
+        <div class="input-group">
+          <label>Correct Answer</label>
+          <select name="answer" required>
+            <option value="option1">Option 1</option>
+            <option value="option2">Option 2</option>
+            <option value="option3">Option 3</option>
+            <option value="option4">Option 4</option>
+          </select>
+        </div>
+        <button type="submit">Add Question</button>
+      </form>
     </div>
 
-    <div class="admin-container">
-        <h2 class="form-title">Admin Dashboard</h2>
-        <p class="form-description">Manage users, exams, and settings from this dashboard.</p>
+    <!-- Manage Users Section -->
+    <div id="update-user" class="tab-section">
+      <h3>Manage Users</h3>
+      <table class="user-table" id="usersTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Class Level</th>
+            <th>Role</th>
+            <th>Update</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Users will load here -->
+        </tbody>
+      </table>
     </div>
 
-    <div class="question-container">
-        <h3 class="form-title">Add Questions</h3>
-        <form class="question-form">
-            <div class="input-group">
-                <label for="question">Question:</label>
-                <input type="text" id="question" placeholder="Enter your question" name="question" required>
-            </div>
-            <div class="input-group">
-                <label for="option1">Option 1:</label>
-                <input type="text" id="option1" placeholder="Enter option 1" name="option1" required>
-            </div>
-            <div class="input-group">
-                <label for="option2">Option 2:</label>
-                <input type="text" id="option2" placeholder="Enter option 2" name="option2" required>
-            </div>
-            <div class="input-group">
-                <label for="option3">Option 3:</label>
-                <input type="text" id="option3" placeholder="Enter option 3" name="option3" required>
-            </div>
-            <div class="input-group">
-                <label for="option4">Option 4:</label>
-                <input type="text" id="option4" placeholder="Enter option 4" name="option4" required>
-            </div>
-            <div class="input-group">
-                <label for="answer">Correct Answer:</label>
-                <select id="answer" name="answer" required>
-                    <option value="">Select correct option</option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
-                </select>
-            </div>
-            <button type="submit">Add Question</button>
-        </form>
+    <!-- Show Questions Section -->
+    <div id="show-questions" class="tab-section">
+      <h3>All Questions</h3>
+      <div id="questionsList">Loading questions...</div>
     </div>
+  </div>
 
-    <div class="question-list-container">
-        <h3 class="form-title">All Questions</h3>
-        <div id="question-list"></div>
-    </div>
+  <div class="footer">
+    <p>&copy; 2025 DS Computer Institute. All rights reserved.</p>
+  </div>
 
-    <div class="footer">
-        <p>&copy; 2023 Exam Application. All rights reserved.</p>
-    </div>
+  <script>
+    // Tab switching
+    function showTab(event, tabId) {
+      document.querySelectorAll(".tab-section").forEach(sec => sec.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      document.getElementById(tabId).classList.add("active");
+      event.currentTarget.classList.add("active");
+    }
 
-    <script>
-        // Auth check
-        fetch('/check-auth')
-            .then(res => res.json())
-            .then(data => {
-                if (data.loggedIn) {
-                    document.getElementById('loginLink').style.display = 'none';
-                    document.getElementById('signupLink').style.display = 'none';
-                } else {
-                    document.getElementById('logoutLink').style.display = 'none';
-                    document.getElementById('profileLink').style.display = 'none';
-                }
-            });
+    // Hamburger menu
+    const hamburger = document.querySelector(".hamburger");
+    const navLinks = document.querySelector(".nav-links");
+    hamburger.addEventListener("click", () => navLinks.classList.toggle("active"));
 
-        // Load questions
-        async function loadQuestions() {
-            const res = await fetch('/api/questions');
-            const questions = await res.json();
-            const listDiv = document.getElementById('question-list');
-            listDiv.innerHTML = '';
-            questions.forEach((q, i) => {
-                const div = document.createElement('div');
-                div.textContent = `${i + 1}. ${q.question} | Correct: ${q.answer}`;
-                listDiv.appendChild(div);
-            });
-        }
-        loadQuestions();
-
-        // Form submit (Ajax)
-        const form = document.querySelector('.question-form');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
-
-            const res = await fetch('/submit-question', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            if (res.ok) {
-                alert('Question added successfully');
-                form.reset();
-                loadQuestions();
-            } else {
-                alert('Error adding question');
-            }
+    // Load questions
+    async function loadQuestions() {
+      try {
+        const res = await fetch('/api/questions');
+        const questions = await res.json();
+        const container = document.getElementById("questionsList");
+        container.innerHTML = "";
+        questions.forEach(q => {
+          const div = document.createElement("div");
+          div.classList.add("question-card");
+          div.innerHTML = `
+            <p><strong>Class ${q.classLevel}:</strong> ${q.questionText}</p>
+            <ul>
+              <li>Option 1: ${q.option1}</li>
+              <li>Option 2: ${q.option2}</li>
+              <li>Option 3: ${q.option3}</li>
+              <li>Option 4: ${q.option4}</li>
+            </ul>
+            <p><strong>Answer:</strong> ${q[q.answer]}</p>
+          `;
+          container.appendChild(div);
         });
-    </script>
-</body>
+      } catch (err) {
+        document.getElementById("questionsList").innerText = "Failed to load questions.";
+      }
+    }
+    loadQuestions();
 
+    // Load users
+    async function loadUsers() {
+      try {
+        const res = await fetch('/api/users');
+        const users = await res.json();
+        const tbody = document.querySelector("#usersTable tbody");
+        tbody.innerHTML = "";
+
+        users.forEach(user => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${user.username}</td>
+            <td>${user.email}</td>
+            <td>
+              <input type="number" value="${user.classLevel}" data-userid="${user._id}" class="class-input"/>
+            </td>
+            <td>
+              <select data-userid="${user._id}" class="role-select">
+                <option value="user" ${user.role === "user" ? "selected" : ""}>Student</option>
+                <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
+              </select>
+            </td>
+            <td>
+              <button onclick="updateUser('${user._id}')">Update</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error(err);
+        document.querySelector("#usersTable tbody").innerHTML =
+          "<tr><td colspan='5'>Failed to load users</td></tr>";
+      }
+    }
+
+    // Update user
+    async function updateUser(userId) {
+      const classLevel = document.querySelector(`.class-input[data-userid='${userId}']`).value;
+      const role = document.querySelector(`.role-select[data-userid='${userId}']`).value;
+
+      try {
+        const res = await fetch("/api/update-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, classLevel, role })
+        });
+
+        if (res.ok) {
+          alert("User updated successfully!");
+          loadUsers();
+        } else {
+          alert("Failed to update user");
+        }
+      } catch (err) {
+        alert("Error updating user");
+      }
+    }
+
+    // Load users on page load
+    loadUsers();
+  </script>
+</body>
 </html>
