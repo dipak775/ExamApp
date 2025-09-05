@@ -72,8 +72,8 @@ function requireAdmin(req, res, next) {
 }
 
 // ================= Page Routes =================
-app.get('/', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'index.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'login.html')));
+app.get('/', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'Index.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'Login.html')));
 app.get('/signup', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'Signup.html')));
 app.get('/exam', requireLogin, async (req, res) => {
   const user = await User.findById(req.session.user._id);
