@@ -12,7 +12,7 @@ const app = express();
 // ================= Middleware =================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(process.cwd(), 'public')));
 app.use(
   session({
     secret: process.env.SESSION_SECRET || 'secret',
@@ -23,7 +23,7 @@ app.use(
 
 // ================= MongoDB ====================
 mongoose
-  .connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ MongoDB Connected'))
   .catch((err) => console.error('❌ MongoDB Error:', err));
 
@@ -72,24 +72,22 @@ function requireAdmin(req, res, next) {
 }
 
 // ================= Page Routes =================
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
-app.get("/signup", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "signup.html"));
-});
+app.get('/', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'index.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'login.html')));
+app.get('/signup', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'Signup.html')));
 app.get('/exam', requireLogin, async (req, res) => {
   const user = await User.findById(req.session.user._id);
   if (!user || user.classLevel === 0) return res.redirect('/waiting');
-  res.sendFile(path.join(__dirname, 'public', 'exam.html'));
+  res.sendFile(path.join(process.cwd(), 'public', 'Exam.html'));
 });
 app.get('/profile', requireLogin, (req, res) =>
-  res.sendFile(path.join(__dirname, 'public', 'profile.html'))
+  res.sendFile(path.join(process.cwd(), 'public', 'Profile.html'))
 );
 app.get('/admin', requireAdmin, (req, res) =>
-  res.sendFile(path.join(__dirname, 'public', 'Admin.html'))
+  res.sendFile(path.join(process.cwd(), 'public', 'Admin.html'))
 );
 app.get('/waiting', requireLogin, (req, res) =>
-  res.sendFile(path.join(__dirname, 'public', 'waiting.html'))
+  res.sendFile(path.join(process.cwd(), 'public', 'Waiting.html'))
 );
 
 // ================= Auth Routes =================
@@ -178,8 +176,6 @@ app.get('/api/questions', requireAdmin, async (req, res) => {
 });
 
 // ================= Exam Timer System =================
-
-// ✅ Start Exam: Dynamic timer per question + extra 10 min
 app.post('/start-exam', requireLogin, async (req, res) => {
   try {
     const user = await User.findById(req.session.user._id);
@@ -188,7 +184,7 @@ app.post('/start-exam', requireLogin, async (req, res) => {
     const questions = await Question.find({ classLevel: user.classLevel });
     const questionCount = questions.length;
 
-    const timePerQuestion = 0.5 * 60 * 1000; // 0.3 minute per question
+    const timePerQuestion = 0.5 * 60 * 1000; // 0.5 minute per question
     const extraTime = 10 * 60 * 1000; // 10 minutes extra
     const totalTime = questionCount * timePerQuestion + extraTime;
 
@@ -206,7 +202,6 @@ app.post('/start-exam', requireLogin, async (req, res) => {
   }
 });
 
-// ✅ Submit Exam
 app.post('/submit-result', requireLogin, async (req, res) => {
   try {
     if (!req.session.examStartTime)
