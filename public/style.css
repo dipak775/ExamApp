@@ -217,7 +217,7 @@ p {
 #profile-container {
   max-width: 900px;
   width: 80%;
-  margin: 20px auto;
+  margin: 40px auto;
   padding: 25px;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 16px;
@@ -752,4 +752,114 @@ button:hover,
   .username{
     height: 22px;
   }
+}
+
+/* ===== Profile Page ===== */
+#profile-container {
+  text-align: left;
+  padding: 40px;
+}
+
+#profile-container h2, #profile-container h3 {
+  color: #1d5d91;
+  border-bottom: 2px solid #1d5d91;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+#profile-container p {
+  font-size: 1.1rem;
+  margin: 15px 0;
+}
+
+#profile-container .value {
+  font-weight: 600;
+  color: #333;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.history-table th,
+.history-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.history-table th {
+  background-color: #1d5d91;
+  color: white;
+  font-weight: 600;
+}
+
+.history-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.history-table tr:hover {
+  background-color: #e9ecef;
+}
+
+#password-strength-meter {
+  height: 5px;
+  width: 100%;
+  background-color: #eee;
+  margin-top: 5px;
+}
+
+#password-strength-meter-fill {
+  height: 100%;
+  width: 0;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+#password-strength-text {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+#password-suggestions {
+  margin-top: 10px;
+  font-size: 12px;
+  text-align: left;
+}
+
+#password-suggestions ul {
+  list-style: none;
+  padding: 0;
+}
+
+#password-suggestions li {
+  margin-bottom: 5px;
+}
+
+#password-suggestions li.valid {
+  color: green;
+}
+
+#password-suggestions li.invalid {
+  color: red;
+}
+
+/* ===== Social Media ===== */
+.social-media {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.social-icon {
+  display: inline-block;
+  margin: 0 15px;
+  font-size: 24px;
+  color: #333;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.2);
+  color: #007bff;
 }

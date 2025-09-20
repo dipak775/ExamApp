@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+<style>
+    
+    .autocomplete-items div {
+      padding: 10px;
+      cursor: pointer;
+      background-color: #fff; 
+      border-bottom: 1px solid #d4d4d4; 
+    }
+    .autocomplete-items div:hover {
+      background-color: #e9e9e9; 
+    }
+    .autocomplete-active {
+      background-color: DodgerBlue !important; 
+      color: #ffffff; 
+    }
+  </style>
+</head>
+<body>
+
+<div class="nav">
+    <h1>Exam Application</h1>
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/admin" id="adminLink" style="display:none;">Admin</a>
+        <a href="/exam">Exam</a>
+        <a href="/notes">Notes</a>
+        <a href="/signup" id="signupLink">Signup</a>
+        <a href="/login" id="loginLink">Login</a>
+        <a href="/logout" id="logoutLink" style="display:none;">Logout</a>
+        <a href="/profile" id="profileLink" style="display:none;"><img src="/profile.png" alt="Profile" width="25" /></a>
+    </div>
+    <button class="hamburger">☰</button>
+</div>
+
+  <!-- Admin Container -->
+  <div class="admin-container">
+    <h2>Admin Dashboard</h2>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="tab-btn active" onclick="showTab(event,'add-question')">Add Question</button>
+      <button class="tab-btn" onclick="showTab(event,'show-questions')">Show All Questions</button>
+      <button class="tab-btn" onclick="showTab(event,'update-user')">Manage Users</button>
+      <button class="tab-btn" onclick="showTab(event,'manage-subjects')">Manage Subjects</button>
+      <button class="tab-btn" onclick="showTab(event,'manage-notes')">Manage Notes</button>
+    </div>
+
+    <!-- Add Question Section -->
+    <div id="add-question" class="tab-section active">
+      <h3 id="question-form-title">Add Question</h3>
+      <form id="questionForm">
+        <div class="input-group">
+          <label>Class Level</label>
+          <select name="classLevels" required>
+            <option value="">Select Class</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Subject Name</label>
+          <select name="subjectName" required>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Chapter Name</label>
+          <select name="chapterName" required>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Question</label>
+          <input type="text" name="questionText" required>
+        </div>
+        <div class="input-group">
+          <label>Option 1</label>
+          <input type="text" name="option1" required>
+        </div>
+        <div class="input-group">
+          <label>Option 2</label>
+          <input type="text" name="option2" required>
+        </div>
+        <div class="input-group">
+          <label>Option 3</label>
+          <input type="text" name="option3" required>
+        </div>
+        <div class="input-group">
+          <label>Option 4</label>
+          <input type="text" name="option4" required>
+        </div>
+        <div class="input-group">
+          <label>Correct Answer</label>
+          <select name="answer" required>
+            <option value="option1">Option 1</option>
+            <option value="option2">Option 2</option>
+            <option value="option3">Option 3</option>
+            <option value="option4">Option 4</option>
+          </select>
+        </div>
+        <button type="submit" id="questionSubmitBtn">Add Question</button>
+        <button type="button" id="cancelQuestionEditBtn" style="display:none;">Cancel Edit</button>
+      </form>
+    </div>
+
+    <!-- Show Questions Section -->
+    <div id="show-questions" class="tab-section">
+      <h3>All Questions</h3>
+      <div class="filters">
+        <label for="filterClass">Filter by Class:</label>
+        <input type="text" id="filterClass" placeholder="e.g., 9,10">
+        <label for="filterSubject">Filter by Subject:</label>
+        <input type="text" id="filterSubject" placeholder="e.g., Math">
+        <button onclick="loadQuestions()">Apply Filters</button>
+      </div>
+      <table class="user-table" id="questionsTable">
+        <thead>
+          <tr>
+            <th>Class Levels</th>
+            <th>Subject</th>
+            <th>Chapter</th>
+            <th>Question</th>
+            <th>Options</th>
+            <th>Answer</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Questions will load here -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Manage Users Section -->
+    <div id="update-user" class="tab-section">
+      <h3>Manage Users</h3>
+      <table class="user-table" id="usersTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Class Level</th>
+            <th>Role</th>
+            <th>Update</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Users will load here -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Manage Subjects Section -->
+    <div id="manage-subjects" class="tab-section">
+      <h3 id="subject-form-title">Add Subject</h3>
+      <form id="subjectForm">
+        <div class="input-group">
+          <label>Subject Name</label>
+          <input type="text" name="name" required>
+        </div>
+        <div class="input-group">
+          <label>Class Levels (comma-separated)</label>
+          <input type="text" name="classLevels" required>
+        </div>
+        <div class="input-group">
+          <label>Chapters (comma-separated)</label>
+          <input type="text" name="chapters" required>
+        </div>
+        <button type="submit" id="subjectSubmitBtn">Add Subject</button>
+        <button type="button" id="cancelSubjectEditBtn" style="display:none;">Cancel Edit</button>
+      </form>
+
+      <hr style="margin: 20px 0;">
+
+      <h3>Existing Subjects</h3>
+      <table class="user-table" id="subjectsTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Class Levels</th>
+            <th>Chapters</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Subjects will load here -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Manage Notes Section -->
+    <div id="manage-notes" class="tab-section">
+      <h3 id="note-form-title">Add Note</h3>
+      <form id="noteForm">
+        <div class="input-group">
+          <label>Class Level</label>
+          <select name="classLevels" required>
+            <option value="">Select Class</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Subject Name</label>
+          <select name="subjectName" required>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Chapter Name</label>
+          <select name="chapterName" required>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Question</label>
+          <textarea name="question" rows="5" required></textarea>
+        </div>
+        <div class="input-group">
+          <label>Answer</label>
+          <textarea name="answer" rows="5" required></textarea>
+        </div>
+        <button type="submit" id="noteSubmitBtn">Add Note</button>
+        <button type="button" id="cancelNoteEditBtn" style="display:none;">Cancel Edit</button>
+      </form>
+
+      <hr style="margin: 20px 0;">
+
+      <h3>Existing Notes</h3>
+      <table class="user-table" id="notesTable">
+        <thead>
+          <tr>
+            <th>Class Levels</th>
+            <th>Subject</th>
+            <th>Chapter</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Notes will load here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>&copy; 2025 DS Computer Institute. All rights reserved.</p>
+  </div>
+
+  <script>
+    // Hamburger menu toggle
+    const hamburger = document.querySelector(".hamburger");
+    const navLinks = document.querySelector(".nav-links");
+    hamburger.addEventListener("click", () => {
+        navLinks.classList.toggle("active");
+    });
+
+    // State for editing
+    let currentlyEditing = { id: null, type: null };
+
+    // Auth check & links visibility
+    document.addEventListener("DOMContentLoaded", async () => {
+        const loginLink = document.getElementById('loginLink');
+        const signupLink = document.getElementById('signupLink');
+        const logoutLink = document.getElementById('logoutLink');
+        const profileLink = document.getElementById('profileLink');
+        const adminLink = document.getElementById('adminLink');
+
+        try {
+            const res = await fetch('/api/check-auth');
+            const data = await res.json();
+
+            if (data.loggedIn) {
+                loginLink.style.display = 'none';
+                signupLink.style.display = 'none';
+                logoutLink.style.display = 'inline-block';
+                profileLink.style.display = 'inline-block';
+
+                if (data.user.role === "admin") {
+                    adminLink.style.display = 'inline-block';
+                }
+            } else {
+                logoutLink.style.display = 'none';
+                profileLink.style.display = 'none';
+                adminLink.style.display = 'none';
+            }
+        } catch (err) {
+            console.error('Auth check failed', err);
+        }
+        
+        // Initial loads
+        loadQuestions();
+        loadUsers();
+        loadSubjects();
+        loadNotes();
+    });
+
+    // Tab switching
+    function showTab(event, tabId) {
+      document.querySelectorAll(".tab-section").forEach(sec => sec.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      document.getElementById(tabId).classList.add("active");
+      if (event) {
+        event.currentTarget.classList.add("active");
+      }
+    }
+
+    function showTabByTabId(tabId) {
+        document.querySelectorAll(".tab-section").forEach(sec => sec.classList.remove("active"));
+        document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+        document.getElementById(tabId).classList.add("active");
+        const correspondingButton = document.querySelector(`.tab-btn[onclick*="'${tabId}'"]`);
+        if (correspondingButton) {
+            correspondingButton.classList.add("active");
+        }
+    }
+
+    // --- Autocomplete for Subjects and Chapters ---
+
+
+
+
+    const classLevelSelect = document.querySelector('#questionForm [name="classLevels"]');
+    const subjectNameSelect = document.querySelector('#questionForm [name="subjectName"]');
+    const chapterNameSelect = document.querySelector('#questionForm [name="chapterName"]');
+
+    classLevelSelect.addEventListener('change', async function() {
+        const classLevel = this.value;
+        subjectNameSelect.innerHTML = '<option value="">Select Subject</option>';
+        chapterNameSelect.innerHTML = '<option value="">Select Chapter</option>';
+        if (!classLevel) return;
+
+        try {
+            const res = await fetch(`/api/subjects/${classLevel}`);
+            const subjects = await res.json();
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject;
+                option.textContent = subject;
+                subjectNameSelect.appendChild(option);
+            });
+        } catch (err) {
+            console.error('Failed to load subjects', err);
+        }
+    });
+
+    subjectNameSelect.addEventListener('change', async function() {
+        const classLevel = classLevelSelect.value;
+        const subjectName = this.value;
+        chapterNameSelect.innerHTML = '<option value="">Select Chapter</option>';
+        if (!classLevel || !subjectName) return;
+
+        try {
+            const res = await fetch(`/api/chapters/${classLevel}/${subjectName}`);
+            const chapters = await res.json();
+            chapters.forEach(chapter => {
+                const option = document.createElement('option');
+                option.value = chapter;
+                option.textContent = chapter;
+                chapterNameSelect.appendChild(option);
+            });
+        } catch (err) {
+            console.error('Failed to load chapters', err);
+        }
+    });
+
+
+
+    document.addEventListener("click", function (e) {
+    });
+
+    // --- Questions ---
+    async function loadQuestions() {
+      try {
+        const filterClass = document.getElementById('filterClass').value;
+        const filterSubject = document.getElementById('filterSubject').value;
+        let url = '/api/admin/questions';
+        const params = new URLSearchParams();
+        if (filterClass) params.append('classLevel', filterClass);
+        if (filterSubject) params.append('subjectName', filterSubject);
+        if (params.toString()) url += `?${params.toString()}`;
+
+        const res = await fetch(url);
+        const questions = await res.json();
+        const tbody = document.querySelector("#questionsTable tbody");
+        tbody.innerHTML = "";
+
+        questions.forEach(q => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${q.classLevels.join(', ')}</td>
+            <td>${q.subjectName}</td>
+            <td>${q.chapterName}</td>
+            <td>${q.questionText}</td>
+            <td><ul>${q.options.map(opt => `<li>${opt}</li>`).join('')}</ul></td>
+            <td>${q.answer}</td>
+          `;
+          const actionsTd = document.createElement("td");
+          const editButton = document.createElement("button");
+          editButton.textContent = "Edit";
+          editButton.addEventListener("click", () => editQuestion(q));
+          actionsTd.appendChild(editButton);
+
+          const deleteButton = document.createElement("button");
+          deleteButton.textContent = "Delete";
+          deleteButton.addEventListener("click", () => deleteQuestion(q._id));
+          actionsTd.appendChild(deleteButton);
+          
+          tr.appendChild(actionsTd);
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error(err);
+        document.querySelector("#questionsTable tbody").innerHTML = "<tr><td colspan='7'>Failed to load questions.</td></tr>";
+      }
+    }
+
+    const questionForm = document.getElementById('questionForm');
+    questionForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(questionForm);
+        const data = Object.fromEntries(formData.entries());
+        
+        const isEditing = currentlyEditing.type === 'question';
+        const url = isEditing ? '/api/admin/update-question' : '/api/admin/add-question';
+        if (isEditing) {
+            data.id = currentlyEditing.id;
+        }
+
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert(`Question ${isEditing ? 'updated' : 'added'} successfully!`);
+                resetQuestionForm();
+                loadQuestions();
+            } else {
+                alert(`Failed to ${isEditing ? 'update' : 'add'} question`);
+            }
+        } catch (err) {
+            alert(`Error ${isEditing ? 'updating' : 'adding'} question`);
+        }
+    });
+
+    function editQuestion(question) {
+        currentlyEditing = { id: question._id, type: 'question' };
+        document.getElementById('question-form-title').textContent = 'Edit Question';
+        
+        questionForm.elements.classLevels.value = question.classLevels.join(', ');
+        
+        // Trigger change event to load subjects
+        const classChangeEvent = new Event('change');
+        questionForm.elements.classLevels.dispatchEvent(classChangeEvent);
+
+        // Set subject and chapter values after a short delay to allow subjects to load
+        setTimeout(() => {
+            questionForm.elements.subjectName.value = question.subjectName;
+            const subjectChangeEvent = new Event('change');
+            questionForm.elements.subjectName.dispatchEvent(subjectChangeEvent);
+
+            setTimeout(() => {
+                questionForm.elements.chapterName.value = question.chapterName;
+            }, 100);
+        }, 100);
+
+        questionForm.elements.questionText.value = question.questionText;
+        questionForm.elements.option1.value = question.options[0];
+        questionForm.elements.option2.value = question.options[1];
+        questionForm.elements.option3.value = question.options[2];
+        questionForm.elements.option4.value = question.options[3];
+        questionForm.elements.answer.value = question.answer;
+
+        document.getElementById('questionSubmitBtn').textContent = 'Update Question';
+        document.getElementById('cancelQuestionEditBtn').style.display = 'inline-block';
+        showTabByTabId('add-question');
+        window.scrollTo(0, 0);
+    }
+
+    function resetQuestionForm() {
+        questionForm.reset();
+        currentlyEditing = { id: null, type: null };
+        document.getElementById('question-form-title').textContent = 'Add Question';
+        document.getElementById('questionSubmitBtn').textContent = 'Add Question';
+        document.getElementById('cancelQuestionEditBtn').style.display = 'none';
+    }
+
+    document.getElementById('cancelQuestionEditBtn').addEventListener('click', resetQuestionForm);
+
+    async function deleteQuestion(id) {
+        if (confirm("Are you sure you want to delete this question?")) {
+            try {
+                const res = await fetch("/api/admin/delete-question", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id })
+                });
+                if (res.ok) {
+                    alert("Question deleted successfully!");
+                    loadQuestions();
+                } else {
+                    alert("Failed to delete question");
+                }
+            } catch (err) {
+                alert("Error deleting question");
+            }
+        }
+    }
+
+    // --- Users ---
+    async function loadUsers() {
+      try {
+        const res = await fetch('/api/users');
+        const users = await res.json();
+        const tbody = document.querySelector("#usersTable tbody");
+        tbody.innerHTML = "";
+
+        users.forEach(user => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${user.username}</td>
+            <td>${user.email}</td>
+            <td><input type="number" value="${user.classLevel}" data-userid="${user._id}" class="class-input"/></td>
+            <td>
+              <select data-userid="${user._id}" class="role-select">
+                <option value="user" ${user.role === "user" ? "selected" : ""}>Student</option>
+                <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
+              </select>
+            </td>
+            <td><button data-userid="${user._id}" class="update-user-btn">Update</button></td>
+            <td><button data-userid="${user._id}" class="delete-user-btn">Delete</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+        
+        document.querySelectorAll('.update-user-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const userId = e.target.getAttribute('data-userid');
+                updateUser(userId);
+            });
+        });
+
+        document.querySelectorAll('.delete-user-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const userId = e.target.getAttribute('data-userid');
+                deleteUser(userId);
+            });
+        });
+
+      } catch (err) {
+        console.error(err);
+        document.querySelector("#usersTable tbody").innerHTML = "<tr><td colspan='6'>Failed to load users</td></tr>";
+      }
+    }
+
+    async function updateUser(userId) {
+      const classLevel = document.querySelector(`.class-input[data-userid='${userId}']`).value;
+      const role = document.querySelector(`.role-select[data-userid='${userId}']`).value;
+
+      try {
+        const res = await fetch("/api/update-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, classLevel, role })
+        });
+        if (res.ok) {
+          alert("User updated successfully!");
+        } else {
+          alert("Failed to update user");
+        }
+      } catch (err) {
+        alert("Error updating user");
+      }
+    }
+
+    async function deleteUser(userId) {
+      if (confirm("Are you sure you want to delete this user?")) {
+        try {
+          const res = await fetch(`/api/users/${userId}`, {
+            method: "DELETE"
+          });
+          if (res.ok) {
+            alert("User deleted successfully!");
+            loadUsers();
+          } else {
+            alert("Failed to delete user");
+          }
+        } catch (err) {
+          alert("Error deleting user");
+        }
+      }
+    }
+
+    // --- Subjects ---
+    async function loadSubjects() {
+      try {
+        const res = await fetch('/api/admin/subjects');
+        const subjects = await res.json();
+        const tbody = document.querySelector("#subjectsTable tbody");
+        tbody.innerHTML = "";
+
+        subjects.forEach(subject => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${subject.name}</td>
+            <td>${subject.classLevels.join(', ')}</td>
+            <td>${subject.chapters.join(', ')}</td>
+          `;
+          const actionsTd = document.createElement("td");
+          const editButton = document.createElement("button");
+          editButton.textContent = "Edit";
+          editButton.addEventListener("click", () => editSubject(subject));
+          actionsTd.appendChild(editButton);
+
+          const deleteButton = document.createElement("button");
+          deleteButton.textContent = "Delete";
+          deleteButton.addEventListener("click", () => deleteSubject(subject._id));
+          actionsTd.appendChild(deleteButton);
+
+          tr.appendChild(actionsTd);
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error(err);
+        document.querySelector("#subjectsTable tbody").innerHTML = "<tr><td colspan='4'>Failed to load subjects</td></tr>";
+      }
+    }
+
+    const subjectForm = document.getElementById('subjectForm');
+    subjectForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(subjectForm);
+        const data = Object.fromEntries(formData.entries());
+
+        const isEditing = currentlyEditing.type === 'subject';
+        const url = isEditing ? '/api/admin/update-subject' : '/api/admin/add-subject';
+        if (isEditing) {
+            data.id = currentlyEditing.id;
+        }
+
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert(`Subject ${isEditing ? 'updated' : 'added'} successfully!`);
+                resetSubjectForm();
+                loadSubjects();
+            } else {
+                alert(`Failed to ${isEditing ? 'update' : 'add'} subject`);
+            }
+        } catch (err) {
+            alert(`Error ${isEditing ? 'updating' : 'adding'} subject`);
+        }
+    });
+
+    function editSubject(subject) {
+        currentlyEditing = { id: subject._id, type: 'subject' };
+        document.getElementById('subject-form-title').textContent = 'Edit Subject';
+        
+        subjectForm.elements.name.value = subject.name;
+        subjectForm.elements.classLevels.value = subject.classLevels.join(', ');
+        subjectForm.elements.chapters.value = subject.chapters.join(', ');
+
+        document.getElementById('subjectSubmitBtn').textContent = 'Update Subject';
+        document.getElementById('cancelSubjectEditBtn').style.display = 'inline-block';
+    }
+
+    function resetSubjectForm() {
+        subjectForm.reset();
+        currentlyEditing = { id: null, type: null };
+        document.getElementById('subject-form-title').textContent = 'Add Subject';
+        document.getElementById('subjectSubmitBtn').textContent = 'Add Subject';
+        document.getElementById('cancelSubjectEditBtn').style.display = 'none';
+    }
+
+    document.getElementById('cancelSubjectEditBtn').addEventListener('click', resetSubjectForm);
+
+    async function deleteSubject(id) {
+        if (confirm("Are you sure you want to delete this subject?")) {
+            try {
+                const res = await fetch("/api/admin/delete-subject", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id })
+                });
+                if (res.ok) {
+                    alert("Subject deleted successfully!");
+                    loadSubjects();
+                } else {
+                    alert("Failed to delete subject");
+                }
+            } catch (err) {
+                alert("Error deleting subject");
+            }
+        }
+    }
+
+    // --- Notes ---
+    async function loadNotes() {
+      try {
+        const res = await fetch('/api/admin/notes');
+        const notes = await res.json();
+        const tbody = document.querySelector("#notesTable tbody");
+        tbody.innerHTML = "";
+
+        notes.forEach(note => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${note.classLevels.join(', ')}</td>
+            <td>${note.subjectName}</td>
+            <td>${note.chapterName}</td>
+          `;
+          const actionsTd = document.createElement("td");
+          const editButton = document.createElement("button");
+          editButton.textContent = "Edit";
+          editButton.addEventListener("click", () => editNote(note));
+          actionsTd.appendChild(editButton);
+
+          const deleteButton = document.createElement("button");
+          deleteButton.textContent = "Delete";
+          deleteButton.addEventListener("click", () => deleteNote(note._id));
+          actionsTd.appendChild(deleteButton);
+
+          tr.appendChild(actionsTd);
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error(err);
+        document.querySelector("#notesTable tbody").innerHTML = "<tr><td colspan='4'>Failed to load notes</td></tr>";
+      }
+    }
+
+    const noteForm = document.getElementById('noteForm');
+    noteForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(noteForm);
+        const data = Object.fromEntries(formData.entries());
+        data.content = `${data.question}|||${data.answer}`;
+        delete data.question;
+        delete data.answer;
+
+        const isEditing = currentlyEditing.type === 'note';
+        const url = isEditing ? '/api/admin/update-note' : '/api/admin/add-note';
+        if (isEditing) {
+            data.id = currentlyEditing.id;
+        }
+
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert(`Note ${isEditing ? 'updated' : 'added'} successfully!`);
+                resetNoteForm();
+                loadNotes();
+            } else {
+                alert(`Failed to ${isEditing ? 'update' : 'add'} note`);
+            }
+        } catch (err) {
+            alert(`Error ${isEditing ? 'updating' : 'adding'} note`);
+        }
+    });
+
+    async function editNote(note) {
+        currentlyEditing = { id: note._id, type: 'note' };
+        document.getElementById('note-form-title').textContent = 'Edit Note';
+        
+        noteForm.elements.classLevels.value = note.classLevels.join(', ');
+
+        // Trigger change event to load subjects
+        const classChangeEvent = new Event('change');
+        noteForm.elements.classLevels.dispatchEvent(classChangeEvent);
+
+        // Set subject and chapter values after a short delay to allow subjects to load
+        setTimeout(() => {
+            noteForm.elements.subjectName.value = note.subjectName;
+            const subjectChangeEvent = new Event('change');
+            noteForm.elements.subjectName.dispatchEvent(subjectChangeEvent);
+
+            setTimeout(() => {
+                noteForm.elements.chapterName.value = note.chapterName;
+            }, 100);
+        }, 100);
+
+        const [question, answer] = note.content.split('|||');
+        noteForm.elements.question.value = question;
+        noteForm.elements.answer.value = answer;
+
+        document.getElementById('noteSubmitBtn').textContent = 'Update Note';
+        document.getElementById('cancelNoteEditBtn').style.display = 'inline-block';
+    }
+
+    function resetNoteForm() {
+        noteForm.reset();
+        currentlyEditing = { id: null, type: null };
+        document.getElementById('note-form-title').textContent = 'Add Note';
+        document.getElementById('noteSubmitBtn').textContent = 'Add Note';
+        document.getElementById('cancelNoteEditBtn').style.display = 'none';
+    }
+    
+    document.getElementById('cancelNoteEditBtn').addEventListener('click', resetNoteForm);
+
+    async function deleteNote(id) {
+        if (confirm("Are you sure you want to delete this note?")) {
+            try {
+                const res = await fetch("/api/admin/delete-note", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id })
+                });
+                if (res.ok) {
+                    alert("Note deleted successfully!");
+                    loadNotes();
+                } else {
+                    alert("Failed to delete note");
+                }
+            } catch (err) {
+                alert("Error deleting note");
+            }
+        }
+    }
+
+    const noteClassLevelSelect = document.querySelector('#noteForm [name="classLevels"]');
+    const noteSubjectNameSelect = document.querySelector('#noteForm [name="subjectName"]');
+    const noteChapterNameSelect = document.querySelector('#noteForm [name="chapterName"]');
+
+    noteClassLevelSelect.addEventListener('change', async function() {
+        const classLevel = this.value;
+        noteSubjectNameSelect.innerHTML = '<option value="">Select Subject</option>';
+        noteChapterNameSelect.innerHTML = '<option value="">Select Chapter</option>';
+        if (!classLevel) return;
+
+        try {
+            const res = await fetch(`/api/subjects/${classLevel}`);
+            const subjects = await res.json();
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject;
+                option.textContent = subject;
+                noteSubjectNameSelect.appendChild(option);
+            });
+        } catch (err) {
+            console.error('Failed to load subjects', err);
+        }
+    });
+
+    noteSubjectNameSelect.addEventListener('change', async function() {
+        const classLevel = noteClassLevelSelect.value;
+        const subjectName = this.value;
+        noteChapterNameSelect.innerHTML = '<option value="">Select Chapter</option>';
+        if (!classLevel || !subjectName) return;
+
+        try {
+            const res = await fetch(`/api/chapters/${classLevel}/${subjectName}`);
+            const chapters = await res.json();
+            chapters.forEach(chapter => {
+                const option = document.createElement('option');
+                option.value = chapter;
+                option.textContent = chapter;
+                noteChapterNameSelect.appendChild(option);
+            });
+        } catch (err) {
+            console.error('Failed to load chapters', err);
+        }
+    });
+  </script>
+</body>
+</html>

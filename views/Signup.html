@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signup Page</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+  
+
+  <!-- Main Content -->
+  <h2 class="form-title">Welcome to the Exam Application</h2>
+  <p class="form-description">This application allows you to manage and take exams online.</p>
+
+  <!-- Signup Form -->
+  <div class="form-container">
+    <form id="signup-form" method="POST" action="/signup">
+      <h3>Sign Up</h3>
+      <input type="text" class="username" placeholder="Username" name="username" required>
+      <input type="email" placeholder="Email" name="email" required>
+      <input type="password" placeholder="Password" name="password" id="password" required minlength="8">
+      <div id="password-strength-meter"></div>
+      <div id="password-strength-text"></div>
+      <div id="password-suggestions" style="display: none;">
+        <p>Password should contain:</p>
+        <ul>
+          <li id="length">At least 8 characters</li>
+          <li id="lowercase">A lowercase letter</li>
+          <li id="uppercase">An uppercase letter</li>
+          <li id="number">A number</li>
+          <li id="special">A special character</li>
+        </ul>
+      </div>
+      <button type="submit">Sign Up</button>
+      <p>Already have an account? <a href="/login" id="show-login">Login</a></p>
+    </form>
+  </div>
+
+  
+  <script>
+    const passwordInput = document.getElementById('password');
+    const passwordStrengthMeter = document.getElementById('password-strength-meter');
+    const passwordStrengthText = document.getElementById('password-strength-text');
+    const passwordSuggestions = document.getElementById('password-suggestions');
+
+    passwordInput.addEventListener('input', () => {
+      const password = passwordInput.value;
+      let strength = 0;
+      const suggestions = {
+        length: password.length >= 8,
+        lowercase: /[a-z]/.test(password),
+        uppercase: /[A-Z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[^A-Za-z0-9]/.test(password)
+      };
+
+      if (suggestions.length) strength++;
+      if (suggestions.lowercase) strength++;
+      if (suggestions.uppercase) strength++;
+      if (suggestions.number) strength++;
+      if (suggestions.special) strength++;
+
+      passwordStrengthMeter.innerHTML = `<div id="password-strength-meter-fill" style="width: ${strength * 20}%; background-color: ${getStrengthColor(strength)};"></div>`;
+
+      switch (strength) {
+        case 0:
+        case 1:
+          passwordStrengthText.textContent = 'Weak';
+          break;
+        case 2:
+          passwordStrengthText.textContent = 'Medium';
+          break;
+        case 3:
+        case 4:
+        case 5:
+          passwordStrengthText.textContent = 'Strong';
+          break;
+      }
+
+      if (password.length > 0) {
+        passwordSuggestions.style.display = 'block';
+        for (const key in suggestions) {
+          const li = document.getElementById(key);
+          if (suggestions[key]) {
+            li.classList.remove('invalid');
+            li.classList.add('valid');
+          } else {
+            li.classList.remove('valid');
+            li.classList.add('invalid');
+          }
+        }
+      } else {
+        passwordSuggestions.style.display = 'none';
+      }
+    });
+
+    function getStrengthColor(strength) {
+      switch (strength) {
+        case 0:
+        case 1:
+          return 'red';
+        case 2:
+          return 'orange';
+        case 3:
+        case 4:
+        case 5:
+          return 'green';
+      }
+    }
+  </script>
+</body>
+
+</html>
