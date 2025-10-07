@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    
+<div class="nav">
+    <h1 id="header-title">DS Computer Institute</h1>
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/admin" id="adminLink" style="display:none;">Admin</a>
+        <a href="/exam">Exam</a>
+        <a href="/notes">Notes</a>
+        <a href="/signup" id="signupLink">Signup</a>
+        <a href="/login" id="loginLink">Login</a>
+        <a href="/logout" id="logoutLink" style="display:none;">Logout</a>
+        <a href="/profile" id="profileLink" style="display:none;"><img src="/profile.png" alt="Profile" width="25" /></a>
+    </div>
+    <button class="hamburger">☰</button>
+</div>
+<script>
+    // Hamburger menu toggle
+    const hamburger = document.querySelector(".hamburger");
+    const navLinks = document.querySelector(".nav-links");
+    hamburger.addEventListener("click", () => {
+        navLinks.classList.toggle("active");
+    });
+
+    // Auth check & links visibility
+    document.addEventListener("DOMContentLoaded", async () => {
+        const loginLink = document.getElementById('loginLink');
+        const signupLink = document.getElementById('signupLink');
+        const logoutLink = document.getElementById('logoutLink');
+        const profileLink = document.getElementById('profileLink');
+        const adminLink = document.getElementById('adminLink');
+        const headerTitle = document.getElementById('header-title');
+
+        const pathname = window.location.pathname;
+        if (pathname === '/' || pathname === '/exam' || pathname === '/notes') {
+            headerTitle.textContent = 'DS Computer Institute';
+        }
+
+        try {
+            const res = await fetch('/api/check-auth');
+            const data = await res.json();
+
+            if (data.loggedIn) {
+                loginLink.style.display = 'none';
+                signupLink.style.display = 'none';
+                logoutLink.style.display = 'inline-block';
+                profileLink.style.display = 'inline-block';
+
+                if (data.user.role === "admin") {
+                    adminLink.style.display = 'inline-block';
+                }
+            } else {
+                logoutLink.style.display = 'none';
+                profileLink.style.display = 'none';
+                adminLink.style.display = 'none';
+            }
+        } catch (err) {
+            console.error('Auth check failed', err);
+        }
+    });
+</script>
+    <!-- Profile Section -->
+  <div id="profile-container">
+    <h2>Student Profile</h2>
+    <p><strong>Name:</strong> <span class="value" id="name">Loading...</span></p>
+    <p><strong>Email:</strong> <span class="value" id="email">Loading...</span></p>
+    <p><strong>Class:</strong> <span class="value" id="classLevel">Loading...</span></p>
+
+    <h3>Exam History</h3>
+    <div id="exam-history">
+      <p>Loading exam data...</p>
+    </div>
+  </div>
+
+  <!-- Script -->
+  <script>
+    // Load Profile Info + Exam Results
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/profile');
+        const data = await res.json();
+
+        if (!data.user) {
+          alert("Session expired, please login again");
+          window.location.href = "/login";
+          return;
+        }
+
+        document.getElementById("name").textContent = data.user.username || "Unknown";
+        document.getElementById("email").textContent = data.user.email || "Unknown";
+        document.getElementById("classLevel").textContent = data.user.classLevel ?? "Not Set";
+
+        const examHistoryDiv = document.getElementById("exam-history");
+        examHistoryDiv.innerHTML = "";
+
+        if (!data.results || data.results.length === 0) {
+          examHistoryDiv.innerHTML = "<p>No exam attempted yet</p>";
+        } else {
+          const resultsBySubject = data.results.reduce((acc, result) => {
+            const subject = result.subjectName || 'Uncategorized';
+            if (!acc[subject]) {
+              acc[subject] = [];
+            }
+            acc[subject].push(result);
+            return acc;
+          }, {});
+
+          let htmlContent = '';
+          for (const subjectName in resultsBySubject) {
+            htmlContent += `<h3>${subjectName}</h3>`;
+            htmlContent += `<div class="table-responsive">`;
+            htmlContent += `
+              <table class="history-table" border="1" cellpadding="8" cellspacing="0" style="width:100%;border-collapse:collapse;text-align:center;margin-bottom: 20px;">
+                <thead>
+                  <tr>
+                    <th>Attempt</th>
+                    <th>Chapter</th>
+                    <th>Score</th>
+                    <th>Total Questions</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+            `;
+            resultsBySubject[subjectName].forEach((r, index) => {
+              const date = new Date(r.submittedAt).toLocaleString();
+              htmlContent += `
+                <tr>
+                  <td>${index + 1}</td>
+                  <td>${r.chapterName || 'N/A'}</td>
+                  <td>${r.score}</td>
+                  <td>${r.total}</td>
+                  <td>${date}</td>
+                </tr>
+              `;
+            });
+            htmlContent += "</tbody></table>";
+            htmlContent += `</div>`;
+          }
+          examHistoryDiv.innerHTML = htmlContent;
+        }
+      } catch (err) {
+        console.error("Profile load failed:", err);
+        alert("Could not load profile data");
+      }
+    }
+    loadProfile();
+  </script>
+    
+<div class="footer">
+    <p>&copy; 2025 DS Computer Institute. All rights reserved.</p>
+</div>
+</body>
+</html>

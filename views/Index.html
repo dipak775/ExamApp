@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DS Computer Institute - Home</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+
+<body>
+  
+
+  <!-- Hero Section -->
+  <div class="hero">
+    <h1>Welcome to the Online Exam Platform</h1>
+    <p>Take exams anytime, track your progress, and improve your skills with ease.</p>
+    <a href="/login" class="btn" id="cta-signup">Get Started</a>
+    <a href="/exam" class="btn" id="cta-exam">Take Exam</a>
+  </div>
+
+  <!-- Features Section -->
+  <div class="features">
+    <div class="feature">
+      <h3>Online Exams</h3>
+      <p>Take exams anytime, anywhere. All questions are saved automatically.</p>
+    </div>
+    <div class="feature">
+      <h3>Instant Results</h3>
+      <p>Get immediate feedback and scores after submitting your exam.</p>
+    </div>
+    <div class="feature">
+      <h3>Progress Tracking</h3>
+      <p>Monitor your performance over time with detailed results history.</p>
+    </div>
+    <div class="feature">
+      <h3>Secure & Reliable</h3>
+      <p>Your exams and data are secure and reliably stored.</p>
+    </div>
+  </div>
+
+  <!-- Instructions Section -->
+  <div class="instructions">
+    <h2>How It Works</h2>
+    <ol>
+      <li>Signup or Login to start your exam.</li>
+      <li>Click "Start Exam" to begin. You will have a timer.</li>
+      <li>Answer the questions. Selected answers are saved automatically.</li>
+      <li>Submit the exam to see your score.</li>
+      <li>You cannot leave the exam page without submitting.</li>
+    </ol>
+  </div>
+
+  <!-- Logged-in User Shortcuts -->
+  <div id="user-shortcuts" style="display: none;">
+    <h3>Welcome <span id="username"></span>!</h3>
+    <a href="/exam" class="btn">Start Exam</a>
+    <a href="/profile" class="btn">Profile</a>
+  </div>
+
+  <div class="social-media">
+    <a href="https://www.facebook.com/dscomputerdhupguri" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+    <a href="https://www.instagram.com/dscomputerinstituteno1/" class="social-icon"><i class="fab fa-instagram"></i></a>
+    <a href="https://www.linkedin.com/in/dipak-saha-42308690/" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+    <a href="https://github.com/dipak775" class="social-icon"><i class="fab fa-github"></i></a>
+  </div>
+
+  <script>
+    fetch('/api/check-auth')
+      .then(res => res.json())
+      .then(data => {
+        if (data.loggedIn) {
+          document.getElementById('user-shortcuts').style.display = 'block';
+          document.getElementById('username').textContent = toTitleCase(data.user.username);
+
+function toTitleCase(str) {
+    return str.replace(
+        /\w\S*/g,
+        function(txt) {
+            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+        }
+    );
+}
+          document.getElementById('cta-signup').style.display = 'none';
+          document.getElementById('cta-exam').style.display = 'inline-block';
+        } else {
+          document.getElementById('user-shortcuts').style.display = 'none';
+          document.getElementById('cta-signup').style.display = 'inline-block';
+          document.getElementById('cta-exam').style.display = 'none';
+        }
+      });
+  </script>
+</body>
+
+</html>

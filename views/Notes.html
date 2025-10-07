@@ -1,0 +1,32 @@
+<!-- Main container for the notes layout -->
+<div class="notes-container">
+
+  <!-- Left Sidebar for Subjects and Chapters -->
+  <aside class="notes-sidebar">
+    <h1 class="sidebar-title">Subjects</h1>
+    <ul id="subject-list">
+      <!-- Subjects will be dynamically loaded here by JavaScript -->
+      <li>Loading subjects...</li>
+    </ul>
+  </aside>
+
+  <!-- Main Content Area for Questions and Answers -->
+  <main class="notes-main">
+    <div class="search-container">
+        <input type="text" id="search-box" placeholder="Search for questions...">
+        <button id="search-button">Search</button>
+    </div>
+    <div id="notes-content">
+      <!-- Placeholder content, will be replaced by JavaScript -->
+      <div class="content-placeholder">
+        <div class="content-placeholder-icon">&#x1F4DA;</div> <!-- Pile of Books icon -->
+        <h2>Welcome to the Notes Section</h2>
+        <p>Select a subject and chapter from the sidebar to view the relevant questions.</p>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<!-- Link to the JavaScript file for this specific page -->
+<script src="/js/notes.js"></script>

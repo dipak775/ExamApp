@@ -1,0 +1,897 @@
+/* ===== Global Styles ===== */
+body {
+  font-family: "Inter", "Roboto", Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f5f5;
+  color: #333;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 600;
+  color: #1d5d91;
+  margin: 5px 0;
+}
+p {
+  color: #555;
+  line-height: 1.6;
+}
+
+/* ===== Navbar ===== */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: linear-gradient(90deg, #1d5d91, #2a73b5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav h1 {
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 16px;
+  align-items: center;
+}
+
+.nav-links a {
+  color: #f2f2f2;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.nav-links a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+}
+
+.nav img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  transition: transform 0.3s ease;
+}
+
+.nav img:hover {
+  transform: scale(1.15);
+}
+
+/* Hamburger menu button */
+.hamburger {
+  display: none;
+  font-size: 24px;
+  color: white;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* ===== Home Page / Hero / Features ===== */
+.hero {
+  text-align: center;
+  padding: 50px 20px;
+  background: linear-gradient(135deg, #d2b3f3 0%, #2575fc 100%);
+  color: white;
+}
+
+.hero h1 {
+  font-size: 40px;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.hero p {
+  font-size: 18px;
+  margin-bottom: 30px;
+  color: white;
+}
+
+.btn {
+  color: #fff;
+  background-image: linear-gradient(to right, #06b6d4, #0891b2, #0e7490);
+  font-weight: 500;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  padding: 0.625rem 1.25rem;
+  text-align: center;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  transition: background-image 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn:hover {
+  background-image: linear-gradient(to bottom right, #06b6d4, #0891b2, #0e7490);
+}
+
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px #67e8f9;
+}
+/* ===== Exam Page Navigation Buttons ===== */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.nav-buttons button {
+  padding: 12px 10px; /* desktop এ বড় padding */
+  font-size: 16px;
+  flex: 1;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(90deg, #1d5d91, #2a73b5);
+  color: #fff;
+  transition: all 0.3s ease;
+  margin: 0 15px;
+}
+
+.nav-buttons button:hover {
+  background: linear-gradient(90deg, #155d8b, #1f6bb2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(29, 93, 145, 0.3);
+}
+
+/* Submit button slightly bigger */
+.nav-buttons .submit-btn {
+  flex: 1.5;
+}
+
+/* For dark mode considerations */
+@media (prefers-color-scheme: dark) {
+  .btn:focus {
+    box-shadow: 0 0 0 4px #164e63;
+  }
+}
+
+.features,
+.instructions {
+  max-width: 1000px;
+  margin: 50px auto;
+  padding: 0 20px;
+}
+
+.features {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.feature {
+  background-color: white;
+  width: 45%;
+  padding: 20px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.feature h3 {
+  margin-top: 0;
+  color: #4e73df;
+}
+
+.instructions ol {
+  padding-left: 20px;
+}
+
+#user-shortcuts {
+  text-align: center;
+  margin: 30px 0;
+  display: none;
+}
+
+#user-shortcuts h3 {
+  margin-bottom: 15px;
+}
+
+/* ===== Containers ===== */
+.admin-container,
+.form-container,
+.quiz-container,
+.exam-container,
+#profile-container {
+  max-width: 900px;
+  width: 80%;
+  margin: 40px auto;
+  padding: 25px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.tab-section {
+  display: none;
+  text-align: left;
+}
+
+.tab-section.active {
+  display: block;
+}
+
+#profile-container {
+  text-align: center;
+}
+
+#profile-container p {
+  font-size: 16px;
+  margin: 12px 0;
+}
+
+#profile-container .value {
+  font-weight: bold;
+  color: #1d5d91;
+}
+
+/* ===== Inputs & Forms ===== */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+/* ===== Inputs ===== */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"] {
+  width: 96%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  outline: none;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+select {
+  width: 100%;
+  padding: 10px 12px; /* slightly smaller padding than input */
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  outline: none;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+
+input:focus,
+select:focus {
+  border-color: #1d5d91;
+  box-shadow: 0 0 10px rgba(29, 93, 145, 0.3);
+}
+
+.input-group label {
+  font-weight: bold;
+  margin-bottom: 2px;
+  margin-left: 10px;
+}
+
+.username {
+  width: 90% !important;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  outline: none;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+}
+
+/* ===== Buttons ===== */
+button,
+.submit-btn,
+.exam-submit-btn,
+.question-form button {
+  padding: 12px 20px;
+  background: linear-gradient(90deg, #1d5d91, #2a73b5);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover,
+.submit-btn:hover,
+.exam-submit-btn:hover,
+.question-form button:hover {
+  background: linear-gradient(90deg, #155d8b, #1f6bb2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(29, 93, 145, 0.3);
+}
+
+/* ===== Admin Section ===== */
+.admin-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: #ddd;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+  background: #1d5d91;
+  color: white;
+  box-shadow: 0 4px 12px rgba(29, 93, 145, 0.3);
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* ===== User Table ===== */
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+.user-table th,
+.user-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ccc;
+}
+.user-table th {
+  background: #1d5d91;
+  color: #fff;
+}
+.user-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+/* ===== Question List ===== */
+#questionsList div {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #f2f2f2;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#questionsList div:hover {
+  background-color: #e6e6e6;
+}
+#questionsList p {
+  margin: -5px 0;
+  font-weight: bold;
+}
+#questionsList li {
+  list-style-type: none;
+  margin: 10px 0;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Timer ===== */
+.time {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: right;
+  color: #1d5d91;
+  margin: 15px 0;
+}
+
+/* ===== Pagination ===== */
+.pagination {
+  text-align: center;
+  margin: 10px 0;
+}
+
+.pagination button {
+  margin: 5px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  background: linear-gradient(90deg, #1d5d91, #2a73b5);
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.pagination button:hover {
+  background: linear-gradient(90deg, #155d8b, #1f6bb2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(29, 93, 145, 0.3);
+}
+
+/* ===== Footer ===== */
+.footer {
+  text-align: center;
+  padding: 24px;
+  background: linear-gradient(90deg, #1d5d91, #2a73b5);
+  color: white;
+  border-radius: 16px 16px 0 0;
+  margin-top: auto;
+}
+.footer p {
+  color: #fff;
+  line-height: 1.6;
+}
+
+/* ===== Waiting Page ===== */
+.waiting-container {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 1s ease-in-out;
+  text-align: center;
+  margin: auto;
+}
+
+.waiting-container h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.waiting-container p {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #f2f2f2;
+}
+
+.loader {
+  border: 6px solid rgba(255, 255, 255, 0.3);
+  border-top: 6px solid #fff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.waiting-container a {
+  display: inline-block;
+  padding: 10px 20px;
+  background: #fff;
+  color: #764ba2;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.waiting-container a:hover {
+  background: #ddd;
+}
+
+/* ===== Exam Page ===== */
+.question-block {
+  margin: 20px 0;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: #f2f2f2;
+  animation: fadeIn 0.5s ease-in-out;
+  text-align: left;
+}
+
+.question-block p {
+  margin: 10px 0;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.question-block label {
+  font-weight: normal;
+  cursor: pointer;
+  display: block;
+}
+.question-block label:hover {
+  color: #1d5d91;
+}
+
+.form-title {
+  text-align: center;
+  margin: 20px 0 5px 0;
+  color: #1d5d91;
+}
+.form-description {
+  text-align: center;
+}
+
+/* ===== Login Form Styles ===== */
+.form-container {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 40px 30px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(6px);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.form-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.form-container h3 {
+  font-size: 1.8rem;
+  color: #1d5d91;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+
+.form-container input[type="email"],
+.form-container input[type="password"] {
+  width: 90%;
+  padding: 12px 14px;
+  margin: 12px 0;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-container input:focus {
+  border-color: #1d5d91;
+  box-shadow: 0 0 10px rgba(29, 93, 145, 0.3);
+  outline: none;
+}
+
+.form-container button[type="submit"] {
+  width: 95%;
+  padding: 12px;
+  margin-top: 15px;
+  border-radius: 12px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(90deg, #1d5d91, #2a73b5);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.form-container button[type="submit"]:hover {
+  background: linear-gradient(90deg, #155d8b, #1f6bb2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(29, 93, 145, 0.3);
+}
+
+.form-container p {
+  margin-top: 20px;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.form-container p a {
+  color: #1d5d91;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.form-container p a:hover {
+  text-decoration: underline;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Navbar */
+  .nav {
+    flex-direction: row; /* name + hamburger in one line */
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+  }
+
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+    background-color: #1d5d91;
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 0;
+    z-index: 99;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .nav-links.active {
+    display: flex;
+  }
+  /* add hover effect on nav links */
+  .nav-links a:hover {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.15),
+      rgba(255, 255, 255, 0.05)
+    );
+    color: #fff;
+  }
+  .hamburger {
+    display: block;
+  }
+
+  /* Hero */
+  .hero h1 {
+    font-size: 28px;
+  }
+  .hero p {
+    font-size: 16px;
+  }
+
+  /* Features */
+  .feature {
+    width: 100%;
+  }
+
+  /* Containers */
+  .exam-container,
+  .admin-container,
+  .form-container,
+  .quiz-container,
+  #profile-container,
+  .features,
+  .instructions {
+    width: 100%;
+    padding: 10px !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+
+  /* Login Form */
+  .form-container h3 {
+    font-size: 1.5rem;
+  }
+
+  /* Question block */
+  .question-block {
+    padding: 15px;
+  }
+
+  /* Tables */
+  .user-table th,
+  .user-table td {
+    padding: 8px;
+  }
+  .nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    gap: 5px;
+  }
+
+  .nav-buttons button {
+    padding: 8px 8px;
+    font-size: 14px;
+    flex: 1;
+  }
+
+  /* Optional: make Submit slightly bigger */
+  .nav-buttons .submit-btn {
+    flex: 1;
+  }
+
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"] {
+    width: 94%;
+    font-size: 0.95rem;
+    padding: 10px 12px;
+  }
+
+  select {
+    font-size: 0.95rem;
+    padding: 8px 10px;
+  }
+  .username{
+    height: 22px;
+  }
+
+  .tab-section {
+    overflow-x: auto;
+  }
+
+  .input-group {
+    margin-bottom: 20px; /* Increase margin */
+  }
+
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  select,
+  textarea {
+    padding: 14px; /* Increase padding for easier touch */
+  }
+}
+
+/* ===== Profile Page ===== */
+#profile-container {
+  text-align: left;
+  padding: 40px;
+}
+
+#profile-container h2, #profile-container h3 {
+  color: #1d5d91;
+  border-bottom: 2px solid #1d5d91;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+#profile-container p {
+  font-size: 1.1rem;
+  margin: 15px 0;
+}
+
+#profile-container .value {
+  font-weight: 600;
+  color: #333;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.history-table th,
+.history-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.history-table th {
+  background-color: #1d5d91;
+  color: white;
+  font-weight: 600;
+}
+
+.history-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.history-table tr:hover {
+  background-color: #e9ecef;
+}
+
+#password-strength-meter {
+  height: 5px;
+  width: 100%;
+  background-color: #eee;
+  margin-top: 5px;
+}
+
+#password-strength-meter-fill {
+  height: 100%;
+  width: 0;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+#password-strength-text {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+#password-suggestions {
+  margin-top: 10px;
+  font-size: 12px;
+  text-align: left;
+}
+
+#password-suggestions ul {
+  list-style: none;
+  padding: 0;
+}
+
+#password-suggestions li {
+  margin-bottom: 5px;
+}
+
+#password-suggestions li.valid {
+  color: green;
+}
+
+#password-suggestions li.invalid {
+  color: red;
+}
+
+/* ===== Social Media ===== */
+.social-media {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.social-icon {
+  display: inline-block;
+  margin: 0 15px;
+  font-size: 24px;
+  color: #333;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: scale(1.2);
+  color: #007bff;
+}
+
+.center-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    flex-grow: 1;
+}
