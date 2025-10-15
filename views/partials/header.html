@@ -14,48 +14,60 @@
     </div>
     <button class="hamburger">☰</button>
 </div>
+<link rel="stylesheet" href="/style.css">
+<link rel="manifest" href="/manifest.json">
 <script>
-    // Hamburger menu toggle
-    const hamburger = document.querySelector(".hamburger");
-    const navLinks = document.querySelector(".nav-links");
-    hamburger.addEventListener("click", () => {
-        navLinks.classList.toggle("active");
-    });
+  // Hamburger menu toggle
+  const hamburger = document.querySelector(".hamburger");
+  const navLinks = document.querySelector(".nav-links");
+  hamburger.addEventListener("click", () => {
+    navLinks.classList.toggle("active");
+  });
 
-    // Auth check & links visibility
-    document.addEventListener("DOMContentLoaded", async () => {
-        const loginLink = document.getElementById('loginLink');
-        const signupLink = document.getElementById('signupLink');
-        const logoutLink = document.getElementById('logoutLink');
-        const profileLink = document.getElementById('profileLink');
-        const adminLink = document.getElementById('adminLink');
-        const headerTitle = document.getElementById('header-title');
+  // Auth check & links visibility
+  document.addEventListener("DOMContentLoaded", async () => {
+    const loginLink = document.getElementById('loginLink');
+    const signupLink = document.getElementById('signupLink');
+    const logoutLink = document.getElementById('logoutLink');
+    const profileLink = document.getElementById('profileLink');
+    const adminLink = document.getElementById('adminLink');
+    const headerTitle = document.getElementById('header-title');
+    const pathname = window.location.pathname;
 
-        const pathname = window.location.pathname;
-        if (pathname === '/' || pathname === '/exam' || pathname === '/notes') {
-            headerTitle.textContent = 'DS Computer Institute';
+    if (pathname === '/' || pathname === '/exam' || pathname === '/notes') {
+      headerTitle.textContent = 'DS Computer Institute';
+    }
+
+    try {
+      const res = await fetch('/api/check-auth');
+      const data = await res.json();
+      if (data.loggedIn) {
+        loginLink.style.display = 'none';
+        signupLink.style.display = 'none';
+        logoutLink.style.display = 'inline-block';
+        profileLink.style.display = 'inline-block';
+        if (data.user.role === "admin") {
+          adminLink.style.display = 'inline-block';
         }
+      } else {
+        logoutLink.style.display = 'none';
+        profileLink.style.display = 'none';
+        adminLink.style.display = 'none';
+      }
+    } catch (err) {
+      console.error('Auth check failed', err);
+    }
+  });
 
-        try {
-            const res = await fetch('/api/check-auth');
-            const data = await res.json();
-
-            if (data.loggedIn) {
-                loginLink.style.display = 'none';
-                signupLink.style.display = 'none';
-                logoutLink.style.display = 'inline-block';
-                profileLink.style.display = 'inline-block';
-
-                if (data.user.role === "admin") {
-                    adminLink.style.display = 'inline-block';
-                }
-            } else {
-                logoutLink.style.display = 'none';
-                profileLink.style.display = 'none';
-                adminLink.style.display = 'none';
-            }
-        } catch (err) {
-            console.error('Auth check failed', err);
-        }
+  // Register Service Worker for PWA
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js').then(registration => {
+        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+      }, err => {
+        console.log('ServiceWorker registration failed: ', err);
+      });
     });
+  }
 </script>
+</head>
