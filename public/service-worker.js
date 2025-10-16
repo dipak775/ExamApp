@@ -5,7 +5,10 @@ const urlsToCache = [
   '/Signup',
   '/style.css',
   '/css/notes.css',
-  '/js/notes.js'
+  '/js/notes.js',
+  '/manifest.json',
+  '/icon.png',
+  '/icon1.png'
 ];
 
 // Install a service worker
