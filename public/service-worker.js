@@ -1,4 +1,4 @@
-const CACHE_NAME = 'exam-app-cache-v3';
+const CACHE_NAME = 'exam-app-cache-v4';
 const urlsToCache = [
   '/',
   '/Login',
@@ -13,9 +13,7 @@ const urlsToCache = [
   '/js/notes.js',
   '/manifest.json',
   '/icon.png',
-  '/icon1.png',
-  '/api/questions',
-  '/api/subjects'
+  '/icon1.png'
 ];
 
 // Install a service worker
@@ -24,13 +22,21 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Opened cache');
-        return cache.addAll(urlsToCache);
+        return cache.addAll(urlsToCache).catch(err => {
+          console.error('Failed to cache', err);
+        });
       })
   );
+  self.skipWaiting();
 });
 
 // Cache and return requests
 self.addEventListener('fetch', event => {
+  // Ignore non-GET requests and non-http/https requests.
+  if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then(response => {
@@ -70,6 +76,6 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
 });

@@ -23,6 +23,7 @@ const studentNotes = require('./studentNotes');
 // API routes for authentication
 router.post('/login', authController.login);
 router.post('/signup', authController.signup);
+router.get('/auth/verify-email/:token', authController.verifyEmail);
 
 // API routes for student notes
 router.use('/student', studentNotes);

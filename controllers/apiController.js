@@ -5,6 +5,11 @@ const Question = require('../models/Question');
 
 exports.getSubjectsByClass = async (req, res) => {
     try {
+        // ✅ Added to prevent TypeError
+        if (!req.query.classLevels) {
+            return res.json([]);
+        }
+        // ✅ End of fix
         const classLevels = req.query.classLevels.split(',');
         let query = { "classes.classLevel": { $in: classLevels } };
 
