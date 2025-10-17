@@ -15,7 +15,7 @@
     }
   ],
   "start_url": "/?utm_source=homescreen",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "portrait",
   "dir": "ltr",
   "lang": "en-US",
