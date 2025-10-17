@@ -1,14 +1,21 @@
-const CACHE_NAME = 'exam-app-cache-v2'; // Changed to v2
+const CACHE_NAME = 'exam-app-cache-v3';
 const urlsToCache = [
   '/',
   '/Login',
   '/Signup',
+  '/Exam',
+  '/Notes',
+  '/Admin',
+  '/Profile',
+  '/Waiting',
   '/style.css',
   '/css/notes.css',
   '/js/notes.js',
   '/manifest.json',
   '/icon.png',
-  '/icon1.png'
+  '/icon1.png',
+  '/api/questions',
+  '/api/subjects'
 ];
 
 // Install a service worker
@@ -25,12 +32,28 @@ self.addEventListener('install', event => {
 // Cache and return requests
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        if (response) {
-          return response; // Cache hit - return response
+        // Check if we received a valid response
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
         }
-        return fetch(event.request);
+
+        // IMPORTANT: Clone the response. A response is a stream
+        // and because we want the browser to consume the response
+        // as well as the cache consuming the response, we need
+        // to clone it so we have two streams.
+        var responseToCache = response.clone();
+
+        caches.open(CACHE_NAME)
+          .then(cache => {
+            cache.put(event.request, responseToCache);
+          });
+
+        return response;
+      })
+      .catch(() => {
+        return caches.match(event.request);
       })
   );
 });
